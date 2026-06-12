@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="董家才子 - 个人学术主页">
+  <meta name="author" content="董家才子">
+  <title>董家才子 - Academic Homepage</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="profile">
+      <div class="avatar-wrapper">
+        <img src="assets/avatar.jpg" alt="董家才子头像" class="avatar"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="avatar-fallback" style="display:none;" aria-hidden="true">DJ</div>
+      </div>
+      <h1 class="name">董家才子</h1>
+      <p class="affiliation">XX大学 / XX学院</p>
+      <p class="research-interests">研究方向：人工智能、自然语言处理、知识图谱</p>
+      <nav class="social-links" aria-label="社交链接">
+        <a href="#" title="Google Scholar" aria-label="Google Scholar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 24a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm0-24L0 9.5l4.838 3.94A8 8 0 0 1 12 9a8 8 0 0 1 7.162 4.44L24 9.5z"/></svg>
+        </a>
+        <a href="#" title="GitHub" aria-label="GitHub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+        </a>
+        <a href="mailto:your@email.com" title="Email" aria-label="Email">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        </a>
+      </nav>
+    </div>
+    <nav class="sidebar-nav" aria-label="主导航">
+      <a href="#news">News</a>
+      <a href="#publications">Publications</a>
+      <a href="#projects">Projects</a>
+    </nav>
+  </aside>
+
+  <button class="menu-toggle" id="menuToggle" aria-label="打开导航菜单" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+
+  <main class="content" id="content">
+    <section id="news">
+      <h2>News</h2>
+      <ul class="news-list">
+        <li>
+          <span class="news-date">2026.06</span>
+          <span>一篇论文被 ACL 2026 录用为长文！</span>
+        </li>
+        <li>
+          <span class="news-date">2026.03</span>
+          <span>受邀担任 EMNLP 2026 审稿人。</span>
+        </li>
+        <li>
+          <span class="news-date">2025.12</span>
+          <span>获得 XX 大学优秀研究生奖学金。</span>
+        </li>
+        <li>
+          <span class="news-date">2025.09</span>
+          <span>开源项目 KG-Reasoner 发布 v1.0，欢迎 Star！</span>
+        </li>
+        <li>
+          <span class="news-date">2025.07</span>
+          <span>参加 ACL 2025 会议并做口头报告。</span>
+        </li>
+        <li>
+          <span class="news-date">2025.05</span>
+          <span>一篇论文被 NeurIPS 2025 接收。</span>
+        </li>
+      </ul>
+    </section>
+
+    <section id="publications">
+      <h2>Publications</h2>
+
+      <h3 class="pub-year">2026</h3>
+      <div class="pub-item">
+        <div class="pub-title">Knowledge Graph Enhanced Reasoning for Complex Question Answering</div>
+        <div class="pub-authors"><u>董家才子</u>, San Zhang, Si Li, Wu Wang</div>
+        <div class="pub-venue">ACL 2026 (Long Paper)</div>
+        <div class="pub-links">
+          <a href="#">[PDF]</a>
+          <a href="#">[Code]</a>
+        </div>
+      </div>
+
+      <h3 class="pub-year">2025</h3>
+      <div class="pub-item">
+        <div class="pub-title">Adaptive Retrieval-Augmented Generation with Dynamic Knowledge Selection</div>
+        <div class="pub-authors">San Zhang, <u>董家才子</u>, Si Li</div>
+        <div class="pub-venue">NeurIPS 2025</div>
+        <div class="pub-links">
+          <a href="#">[PDF]</a>
+          <a href="#">[Code]</a>
+        </div>
+      </div>
+      <div class="pub-item">
+        <div class="pub-title">Efficient Fine-tuning of Large Language Models via Sparse Adaptation</div>
+        <div class="pub-authors"><u>董家才子</u>, Wu Wang, Liu Zhao</div>
+        <div class="pub-venue">EMNLP 2025 (Findings)</div>
+        <div class="pub-links">
+          <a href="#">[PDF]</a>
+        </div>
+      </div>
+
+      <h3 class="pub-year">2024</h3>
+      <div class="pub-item">
+        <div class="pub-title">Multi-hop Reasoning over Heterogeneous Knowledge Graphs</div>
+        <div class="pub-authors"><u>董家才子</u>, San Zhang, Si Li, Wu Wang, Liu Zhao</div>
+        <div class="pub-venue">AAAI 2024</div>
+        <div class="pub-links">
+          <a href="#">[PDF]</a>
+          <a href="#">[Code]</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects">
+      <h2>Projects</h2>
+      <div class="projects-grid">
+        <article class="project-card">
+          <div class="project-thumb-fallback" aria-hidden="true">KG</div>
+          <div class="project-body">
+            <h3>KG-Reasoner</h3>
+            <p>基于知识图谱的多跳推理框架，支持多种推理路径搜索策略。</p>
+            <a href="#">GitHub →</a>
+          </div>
+        </article>
+        <article class="project-card">
+          <div class="project-thumb-fallback" aria-hidden="true">RA</div>
+          <div class="project-body">
+            <h3>AdaptiveRAG</h3>
+            <p>自适应检索增强生成系统，动态选择外部知识源提升回答质量。</p>
+            <a href="#">GitHub →</a>
+          </div>
+        </article>
+        <article class="project-card">
+          <div class="project-thumb-fallback" aria-hidden="true">FT</div>
+          <div class="project-body">
+            <h3>SparseFit</h3>
+            <p>大语言模型稀疏微调工具包，仅需训练 0.1% 参数即可适配下游任务。</p>
+            <a href="#">GitHub →</a>
+          </div>
+        </article>
+        <article class="project-card">
+          <div class="project-thumb-fallback" aria-hidden="true">QA</div>
+          <div class="project-body">
+            <h3>ComplexQA-Bench</h3>
+            <p>复杂问答评测基准，涵盖多跳、时序、数值推理等 8 类题型。</p>
+            <a href="#">GitHub →</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <p>&copy; 2026 董家才子. Last updated: June 2026.</p>
+    </footer>
+  </main>
+
+  <script>
+    const toggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    toggle.addEventListener('click', () => {
+      const open = sidebar.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open);
+    });
+    sidebar.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('open');
+          toggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
