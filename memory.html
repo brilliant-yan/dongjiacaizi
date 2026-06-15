@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>记忆翻牌 🃏</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .mem-body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    .mem-body .page-header { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .mem-body .page-title { color: #fff; }
+    .mem-body .back-link { color: #ddd; }
+
+    .mem-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 24px 16px; }
+
+    .difficulty-select { display: flex; gap: 12px; margin-bottom: 24px; }
+    .diff-btn {
+      padding: 10px 24px; border: 2px solid rgba(255,255,255,0.3); border-radius: 24px;
+      background: transparent; color: #fff; font-size: 15px; cursor: pointer; transition: all 0.2s;
+    }
+    .diff-btn:hover, .diff-btn.active { background: rgba(255,255,255,0.2); border-color: #fff; }
+
+    .mem-hud { display: flex; gap: 32px; margin-bottom: 20px; color: #fff; font-size: 16px; font-weight: 600; }
+
+    .mem-grid { display: grid; gap: 8px; margin-bottom: 24px; perspective: 1000px; }
+    .mem-grid.size-4 { grid-template-columns: repeat(4, 72px); }
+    .mem-grid.size-6 { grid-template-columns: repeat(4, 72px); }
+    .mem-grid.size-8 { grid-template-columns: repeat(5, 68px); }
+
+    .mem-card {
+      width: 72px; height: 88px; position: relative; cursor: pointer;
+      transform-style: preserve-3d; transition: transform 0.5s;
+    }
+    .mem-grid.size-8 .mem-card { width: 68px; height: 84px; }
+
+    .mem-card.flipped { transform: rotateY(180deg); }
+    .mem-card.matched { opacity: 0.5; pointer-events: none; }
+
+    .mem-card-front, .mem-card-back {
+      position: absolute; inset: 0; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      backface-visibility: hidden; font-size: 36px;
+    }
+    .mem-card-front {
+      background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .mem-card-back {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+      transform: rotateY(180deg);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .mem-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #fff; gap: 16px; z-index: 100;
+    }
+    .mem-overlay.hidden { display: none; }
+    .mem-overlay h2 { font-size: 28px; }
+    .mem-overlay p { font-size: 16px; color: #ddd; }
+
+    .btn-mem {
+      padding: 12px 32px; border: none; border-radius: 24px;
+      background: #fff; color: #764ba2; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: transform 0.15s;
+    }
+    .btn-mem:hover { transform: scale(1.05); }
+
+    .mem-body .page-footer { color: rgba(255,255,255,0.4); }
+
+    @media (max-width: 520px) {
+      .mem-grid.size-4 { grid-template-columns: repeat(4, 64px); }
+      .mem-grid.size-6 { grid-template-columns: repeat(4, 64px); }
+      .mem-grid.size-8 { grid-template-columns: repeat(5, 56px); }
+      .mem-card { width: 64px; height: 80px; }
+      .mem-grid.size-8 .mem-card { width: 56px; height: 72px; }
+      .mem-card-front, .mem-card-back { font-size: 28px; }
+    }
+  </style>
+</head>
+<body class="page-body mem-body">
+  <header class="page-header">
+    <div class="page-title"><span class="page-title-icon">🃏</span>记忆翻牌</div>
+    <a href="./" class="back-link">← 回首页</a>
+  </header>
+
+  <div class="mem-container">
+    <div class="difficulty-select">
+      <button class="diff-btn active" onclick="startGame(4)">简单 4对</button>
+      <button class="diff-btn" onclick="startGame(6)">普通 6对</button>
+      <button class="diff-btn" onclick="startGame(8)">困难 8对</button>
+    </div>
+
+    <div class="mem-hud">
+      <span>步数 <span id="moves">0</span></span>
+      <span>配对 <span id="pairs">0</span>/<span id="totalPairs">4</span></span>
+      <span>⏱ <span id="timer">0</span>s</span>
+    </div>
+
+    <div class="mem-grid size-4" id="grid"></div>
+  </div>
+
+  <div class="mem-overlay hidden" id="winOverlay">
+    <h2>🎉 通关！</h2>
+    <p>用了 <span id="winMoves">0</span> 步，耗时 <span id="winTime">0</span>s</p>
+    <p id="winComment"></p>
+    <button class="btn-mem" onclick="restartGame()">再来一局</button>
+  </div>
+
+  <footer class="page-footer">made with ♥ by 董家才子</footer>
+
+  <script>
+    const ALL_EMOJIS = ['🐱','🐶','🐼','🦊','🐸','🐵','🦁','🐷','🐙','🦋','🐢','🐬'];
+    let currentPairs = 4;
+    let cards = [], flipped = [], matched = 0, moves = 0, lockBoard = false;
+    let timerInterval = null, seconds = 0;
+
+    const grid = document.getElementById('grid');
+
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function startGame(pairs) {
+      currentPairs = pairs;
+      document.querySelectorAll('.diff-btn').forEach((b, i) => {
+        b.classList.toggle('active', [4,6,8][i] === pairs);
+      });
+      document.getElementById('totalPairs').textContent = pairs;
+      reset();
+
+      const emojis = shuffle([...ALL_EMOJIS]).slice(0, pairs);
+      cards = shuffle([...emojis, ...emojis]);
+
+      const sizeClass = pairs <= 4 ? 'size-4' : pairs <= 6 ? 'size-6' : 'size-8';
+      grid.className = 'mem-grid ' + sizeClass;
+      grid.innerHTML = '';
+
+      cards.forEach((emoji, i) => {
+        const card = document.createElement('div');
+        card.className = 'mem-card';
+        card.dataset.emoji = emoji;
+        card.dataset.index = i;
+        card.innerHTML = `
+          <div class="mem-card-front">?</div>
+          <div class="mem-card-back">${emoji}</div>
+        `;
+        card.addEventListener('click', () => flipCard(card));
+        grid.appendChild(card);
+      });
+    }
+
+    function reset() {
+      flipped = []; matched = 0; moves = 0; lockBoard = false; seconds = 0;
+      clearInterval(timerInterval); timerInterval = null;
+      document.getElementById('moves').textContent = 0;
+      document.getElementById('pairs').textContent = 0;
+      document.getElementById('timer').textContent = 0;
+      document.getElementById('winOverlay').classList.add('hidden');
+    }
+
+    function startTimer() {
+      if (timerInterval) return;
+      timerInterval = setInterval(() => {
+        seconds++;
+        document.getElementById('timer').textContent = seconds;
+      }, 1000);
+    }
+
+    function flipCard(card) {
+      if (lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+      startTimer();
+      card.classList.add('flipped');
+      flipped.push(card);
+
+      if (flipped.length === 2) {
+        moves++;
+        document.getElementById('moves').textContent = moves;
+        lockBoard = true;
+
+        if (flipped[0].dataset.emoji === flipped[1].dataset.emoji) {
+          flipped.forEach(c => c.classList.add('matched'));
+          matched++;
+          document.getElementById('pairs').textContent = matched;
+          flipped = [];
+          lockBoard = false;
+
+          if (matched === currentPairs) {
+            clearInterval(timerInterval);
+            setTimeout(showWin, 600);
+          }
+        } else {
+          setTimeout(() => {
+            flipped.forEach(c => c.classList.remove('flipped'));
+            flipped = [];
+            lockBoard = false;
+          }, 800);
+        }
+      }
+    }
+
+    function showWin() {
+      document.getElementById('winMoves').textContent = moves;
+      document.getElementById('winTime').textContent = seconds;
+      const minMoves = currentPairs;
+      const ratio = moves / minMoves;
+      let comment;
+      if (ratio <= 1.5) comment = '记忆力逆天！你是不是开挂了？🧠';
+      else if (ratio <= 2.5) comment = '不错不错，记忆达人！👏';
+      else if (ratio <= 4) comment = '还行，继续练练~ 💪';
+      else comment = '老板在你身后，别摸了 😱';
+      document.getElementById('winComment').textContent = comment;
+      document.getElementById('winOverlay').classList.remove('hidden');
+    }
+
+    function restartGame() { startGame(currentPairs); }
+
+    startGame(4);
+  </script>
+</body>
+</html>

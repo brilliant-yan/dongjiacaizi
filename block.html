@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>打砖块 🧱</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .blk-body { background: #0a0a1a; color: #eee; min-height: 100vh; }
+    .blk-body .page-header { background: #111; border-color: #222; }
+    .blk-body .page-title { color: #eee; }
+    .blk-body .back-link { color: #64b5f6; }
+
+    .blk-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 16px; }
+
+    .blk-hud { display: flex; gap: 28px; margin-bottom: 12px; font-size: 15px; font-weight: 600; }
+    .hud-lives { color: #ff6b6b; }
+    .hud-score { color: #ffd43b; }
+    .hud-level { color: #64b5f6; }
+
+    .blk-canvas-wrap { position: relative; border: 2px solid #222; border-radius: 8px; overflow: hidden; touch-action: none; }
+    #blkCanvas { display: block; }
+
+    .blk-overlay {
+      position: absolute; inset: 0; background: rgba(10,10,26,0.92);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; padding: 20px;
+    }
+    .blk-overlay.hidden { display: none; }
+    .blk-overlay h2 { font-size: 26px; color: #fff; }
+    .blk-overlay p { font-size: 14px; color: #aaa; text-align: center; line-height: 1.8; }
+    .blk-overlay .level-num { font-size: 64px; font-weight: 700; color: #64b5f6; }
+    .blk-overlay .final-score { font-size: 48px; font-weight: 700; color: #ffd43b; }
+
+    .btn-blk {
+      padding: 12px 32px; border: none; border-radius: 8px;
+      background: #64b5f6; color: #0a0a1a; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: transform 0.15s;
+    }
+    .btn-blk:hover { transform: scale(1.05); }
+    .btn-blk.danger { background: #ff6b6b; }
+
+    .blk-tip { margin-top: 10px; font-size: 13px; color: #555; }
+    .blk-body .page-footer { color: rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body class="page-body blk-body">
+  <header class="page-header">
+    <div class="page-title"><span class="page-title-icon">🧱</span>打砖块</div>
+    <a href="./" class="back-link">← 回首页</a>
+  </header>
+
+  <div class="blk-container">
+    <div class="blk-hud">
+      <span class="hud-lives" id="lives">♥♥♥</span>
+      <span>分数 <span class="hud-score" id="score">0</span></span>
+      <span>关卡 <span class="hud-level" id="level">1</span>/10</span>
+    </div>
+
+    <div class="blk-canvas-wrap" id="wrap">
+      <canvas id="blkCanvas" width="400" height="500"></canvas>
+
+      <div class="blk-overlay" id="startOverlay">
+        <h2>🧱 打砖块</h2>
+        <p>
+          鼠标 / 手指 控制挡板<br>
+          击碎所有砖块即可通关<br>
+          共 10 关，每关越来越难<br>
+          球会越来越快，砖越来越硬
+        </p>
+        <button class="btn-blk" onclick="beginGame()">开始挑战</button>
+      </div>
+
+      <div class="blk-overlay hidden" id="levelOverlay">
+        <p>关卡</p>
+        <div class="level-num" id="levelNum">1</div>
+        <p id="levelDesc"></p>
+      </div>
+
+      <div class="blk-overlay hidden" id="winOverlay">
+        <h2>🎉 全部通关！</h2>
+        <div class="final-score" id="winScore">0</div>
+        <p>你太强了，老板瑟瑟发抖 🫨</p>
+        <button class="btn-blk" onclick="beginGame()">再来一次</button>
+      </div>
+
+      <div class="blk-overlay hidden" id="loseOverlay">
+        <h2>💀 球丢了</h2>
+        <p>在第 <span id="loseLevel">1</span> 关倒下了</p>
+        <p>最终得分 <span id="loseScore">0</span></p>
+        <div style="display:flex;gap:12px;">
+          <button class="btn-blk" onclick="retryLevel()">重试本关</button>
+          <button class="btn-blk danger" onclick="beginGame()">从头开始</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="blk-tip">💡 砖块颜色越深 = 需要多次击打</p>
+  </div>
+
+  <footer class="page-footer">made with ♥ by 董家才子</footer>
+
+  <script>
+    const canvas = document.getElementById('blkCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    const LEVELS = [
+      { rows: 3, cols: 6, ballSpeed: 3, hpMax: 1, desc: '热身关卡，找找手感' },
+      { rows: 4, cols: 6, ballSpeed: 3.2, hpMax: 1, desc: '砖块多了一行' },
+      { rows: 4, cols: 7, ballSpeed: 3.5, hpMax: 2, desc: '部分砖块需要打两次' },
+      { rows: 5, cols: 7, ballSpeed: 3.7, hpMax: 2, desc: '球速加快了！' },
+      { rows: 5, cols: 8, ballSpeed: 4, hpMax: 2, desc: '更密更快更强' },
+      { rows: 5, cols: 8, ballSpeed: 4.3, hpMax: 3, desc: '铁壁铜墙，三击才碎' },
+      { rows: 6, cols: 8, ballSpeed: 4.5, hpMax: 3, desc: '砖海战术' },
+      { rows: 6, cols: 9, ballSpeed: 4.8, hpMax: 3, desc: '手速考验！' },
+      { rows: 6, cols: 9, ballSpeed: 5.2, hpMax: 4, desc: '终极挑战前奏' },
+      { rows: 7, cols: 9, ballSpeed: 5.5, hpMax: 4, desc: '最终关卡！全力以赴' },
+    ];
+
+    const BRICK_COLORS = ['#ff6b6b','#ffa726','#ffee58','#66bb6a','#42a5f5','#ab47bc','#ec407a'];
+
+    let level = 0, score = 0, lives = 3;
+    let paddle, ball, bricks, particles;
+    let running = false, animId = null;
+
+    function initLevel(lvl) {
+      const cfg = LEVELS[lvl];
+      const padW = 70;
+      paddle = { x: W / 2 - padW / 2, y: H - 30, w: padW, h: 12 };
+      ball = {
+        x: W / 2, y: H - 50, r: 7,
+        vx: (Math.random() > 0.5 ? 1 : -1) * cfg.ballSpeed * 0.7,
+        vy: -cfg.ballSpeed,
+        speed: cfg.ballSpeed,
+      };
+
+      const margin = 10;
+      const gap = 4;
+      const totalW = W - margin * 2;
+      const bw = (totalW - gap * (cfg.cols - 1)) / cfg.cols;
+      const bh = 18;
+      bricks = [];
+
+      for (let r = 0; r < cfg.rows; r++) {
+        for (let c = 0; c < cfg.cols; c++) {
+          const hp = Math.min(cfg.hpMax, r < 2 ? cfg.hpMax : Math.max(1, cfg.hpMax - 1));
+          bricks.push({
+            x: margin + c * (bw + gap),
+            y: 40 + r * (bh + gap),
+            w: bw, h: bh,
+            hp, maxHp: hp,
+            color: BRICK_COLORS[r % BRICK_COLORS.length],
+            alive: true,
+          });
+        }
+      }
+      particles = [];
+    }
+
+    function updateHUD() {
+      document.getElementById('lives').textContent = '♥'.repeat(Math.max(0, lives));
+      document.getElementById('score').textContent = score;
+      document.getElementById('level').textContent = level + 1;
+    }
+
+    function createParticles(x, y, color) {
+      for (let i = 0; i < 5; i++) {
+        particles.push({
+          x, y,
+          vx: (Math.random() - 0.5) * 5,
+          vy: (Math.random() - 0.5) * 5,
+          life: 25, color, size: Math.random() * 3 + 2,
+        });
+      }
+    }
+
+    function update() {
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      if (ball.x - ball.r < 0 || ball.x + ball.r > W) ball.vx *= -1;
+      if (ball.y - ball.r < 0) ball.vy *= -1;
+
+      if (ball.y + ball.r > H) {
+        lives--;
+        updateHUD();
+        if (lives <= 0) {
+          running = false;
+          showLose();
+          return;
+        }
+        resetBall();
+      }
+
+      if (
+        ball.x > paddle.x && ball.x < paddle.x + paddle.w &&
+        ball.y + ball.r > paddle.y && ball.y + ball.r < paddle.y + paddle.h + 6
+      ) {
+        const hit = (ball.x - (paddle.x + paddle.w / 2)) / (paddle.w / 2);
+        const angle = hit * Math.PI / 3;
+        const spd = ball.speed;
+        ball.vx = spd * Math.sin(angle);
+        ball.vy = -spd * Math.cos(angle);
+        ball.y = paddle.y - ball.r;
+      }
+
+      for (const b of bricks) {
+        if (!b.alive) continue;
+        if (
+          ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.w &&
+          ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.h
+        ) {
+          b.hp--;
+          if (b.hp <= 0) {
+            b.alive = false;
+            score += 10 * (level + 1);
+            createParticles(b.x + b.w / 2, b.y + b.h / 2, b.color);
+          }
+          updateHUD();
+
+          const fromLeft = ball.x - (b.x);
+          const fromRight = (b.x + b.w) - ball.x;
+          const fromTop = ball.y - (b.y);
+          const fromBottom = (b.y + b.h) - ball.y;
+          const minDist = Math.min(fromLeft, fromRight, fromTop, fromBottom);
+          if (minDist === fromTop || minDist === fromBottom) ball.vy *= -1;
+          else ball.vx *= -1;
+          break;
+        }
+      }
+
+      particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; });
+      particles = particles.filter(p => p.life > 0);
+
+      if (bricks.every(b => !b.alive)) {
+        running = false;
+        if (level >= LEVELS.length - 1) {
+          showWin();
+        } else {
+          setTimeout(() => nextLevel(), 500);
+        }
+      }
+    }
+
+    function resetBall() {
+      const cfg = LEVELS[level];
+      ball.x = W / 2;
+      ball.y = H - 50;
+      ball.vx = (Math.random() > 0.5 ? 1 : -1) * cfg.ballSpeed * 0.7;
+      ball.vy = -cfg.ballSpeed;
+    }
+
+    function draw() {
+      ctx.fillStyle = '#0a0a1a';
+      ctx.fillRect(0, 0, W, H);
+
+      for (const b of bricks) {
+        if (!b.alive) continue;
+        const alpha = 0.3 + 0.7 * (b.hp / b.maxHp);
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = b.color;
+        ctx.beginPath();
+        ctx.roundRect(b.x, b.y, b.w, b.h, 4);
+        ctx.fill();
+        if (b.maxHp > 1) {
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(b.hp, b.x + b.w / 2, b.y + b.h / 2);
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = '#64b5f6';
+      ctx.beginPath();
+      ctx.roundRect(paddle.x, paddle.y, paddle.w, paddle.h, 6);
+      ctx.fill();
+
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      particles.forEach(p => {
+        ctx.globalAlpha = p.life / 25;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    function loop() {
+      if (!running) return;
+      update();
+      draw();
+      animId = requestAnimationFrame(loop);
+    }
+
+    function showOverlay(id) {
+      ['startOverlay','levelOverlay','winOverlay','loseOverlay'].forEach(i =>
+        document.getElementById(i).classList.toggle('hidden', i !== id)
+      );
+    }
+    function hideAllOverlays() {
+      ['startOverlay','levelOverlay','winOverlay','loseOverlay'].forEach(i =>
+        document.getElementById(i).classList.add('hidden')
+      );
+    }
+
+    function beginGame() {
+      level = 0; score = 0; lives = 3;
+      updateHUD();
+      showLevelScreen();
+    }
+
+    function showLevelScreen() {
+      const cfg = LEVELS[level];
+      document.getElementById('levelNum').textContent = level + 1;
+      document.getElementById('levelDesc').textContent = cfg.desc;
+      showOverlay('levelOverlay');
+      setTimeout(() => {
+        hideAllOverlays();
+        initLevel(level);
+        running = true;
+        loop();
+      }, 1500);
+    }
+
+    function nextLevel() {
+      cancelAnimationFrame(animId);
+      level++;
+      updateHUD();
+      showLevelScreen();
+    }
+
+    function retryLevel() {
+      hideAllOverlays();
+      lives = 3;
+      updateHUD();
+      initLevel(level);
+      running = true;
+      loop();
+    }
+
+    function showWin() {
+      cancelAnimationFrame(animId);
+      document.getElementById('winScore').textContent = score;
+      showOverlay('winOverlay');
+    }
+
+    function showLose() {
+      cancelAnimationFrame(animId);
+      document.getElementById('loseLevel').textContent = level + 1;
+      document.getElementById('loseScore').textContent = score;
+      showOverlay('loseOverlay');
+    }
+
+    // Controls
+    const wrap = document.getElementById('wrap');
+    function movePaddle(clientX) {
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      paddle.x = Math.max(0, Math.min(W - paddle.w, x - paddle.w / 2));
+    }
+    canvas.addEventListener('mousemove', e => movePaddle(e.clientX));
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); movePaddle(e.touches[0].clientX); }, { passive: false });
+
+    initLevel(0);
+  </script>
+</body>
+</html>

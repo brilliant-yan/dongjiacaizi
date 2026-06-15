@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2048 摸鱼版 🧱</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .g2048-body { background: #faf8ef; min-height: 100vh; }
+
+    .g2048-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 24px 16px; }
+
+    .g2048-hud { display: flex; gap: 16px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .g2048-score-box {
+      background: #bbada0; color: #fff; padding: 8px 20px; border-radius: 8px;
+      text-align: center; min-width: 80px;
+    }
+    .g2048-score-label { font-size: 12px; text-transform: uppercase; color: #eee4da; }
+    .g2048-score-val { font-size: 22px; font-weight: 700; }
+
+    .g2048-board {
+      position: relative;
+      background: #bbada0; border-radius: 8px; padding: 8px;
+      display: grid; grid-template-columns: repeat(4, 80px); gap: 8px;
+      touch-action: none;
+    }
+
+    .g2048-cell {
+      width: 80px; height: 80px; border-radius: 6px;
+      background: rgba(238, 228, 218, 0.35);
+    }
+
+    .g2048-tile-layer {
+      position: absolute; inset: 8px;
+      display: grid; grid-template-columns: repeat(4, 80px); gap: 8px;
+      pointer-events: none;
+    }
+
+    .g2048-tile {
+      width: 80px; height: 80px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 28px;
+      transition: transform 0.12s ease;
+      animation: tileAppear 0.2s ease;
+    }
+
+    @keyframes tileAppear {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .g2048-tile[data-value="2"] { background: #eee4da; color: #776e65; }
+    .g2048-tile[data-value="4"] { background: #ede0c8; color: #776e65; }
+    .g2048-tile[data-value="8"] { background: #f2b179; color: #f9f6f2; }
+    .g2048-tile[data-value="16"] { background: #f59563; color: #f9f6f2; font-size: 26px; }
+    .g2048-tile[data-value="32"] { background: #f67c5f; color: #f9f6f2; font-size: 26px; }
+    .g2048-tile[data-value="64"] { background: #f65e3b; color: #f9f6f2; font-size: 26px; }
+    .g2048-tile[data-value="128"] { background: #edcf72; color: #f9f6f2; font-size: 22px; }
+    .g2048-tile[data-value="256"] { background: #edcc61; color: #f9f6f2; font-size: 22px; }
+    .g2048-tile[data-value="512"] { background: #edc850; color: #f9f6f2; font-size: 22px; }
+    .g2048-tile[data-value="1024"] { background: #edc53f; color: #f9f6f2; font-size: 18px; }
+    .g2048-tile[data-value="2048"] { background: #edc22e; color: #f9f6f2; font-size: 18px; box-shadow: 0 0 24px rgba(237,194,46,0.6); }
+    .g2048-tile[data-value="4096"], .g2048-tile[data-value="8192"] {
+      background: #3c3a32; color: #f9f6f2; font-size: 16px;
+    }
+
+    .g2048-btns { display: flex; gap: 12px; margin-top: 16px; }
+    .g2048-btn {
+      padding: 10px 24px; border: none; border-radius: 8px;
+      background: #8f7a66; color: #f9f6f2; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .g2048-btn:hover { background: #776055; }
+
+    .g2048-tip { font-size: 13px; color: #776e65; margin-top: 12px; }
+
+    .g2048-overlay {
+      position: fixed; inset: 0; background: rgba(238,228,218,0.85);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 100; gap: 16px;
+    }
+    .g2048-overlay.hidden { display: none; }
+    .g2048-overlay h2 { font-size: 36px; color: #776e65; }
+    .g2048-overlay p { font-size: 18px; color: #776e65; }
+
+    @media (max-width: 520px) {
+      .g2048-board { grid-template-columns: repeat(4, 68px); gap: 6px; padding: 6px; }
+      .g2048-cell { width: 68px; height: 68px; }
+      .g2048-tile-layer { grid-template-columns: repeat(4, 68px); gap: 6px; }
+      .g2048-tile { width: 68px; height: 68px; font-size: 24px; }
+      .g2048-tile[data-value="128"], .g2048-tile[data-value="256"], .g2048-tile[data-value="512"] { font-size: 20px; }
+      .g2048-tile[data-value="1024"], .g2048-tile[data-value="2048"] { font-size: 16px; }
+    }
+  </style>
+</head>
+<body class="page-body g2048-body">
+  <header class="page-header">
+    <div class="page-title"><span class="page-title-icon">🧱</span>2048 摸鱼版</div>
+    <a href="./" class="back-link">← 回首页</a>
+  </header>
+
+  <div class="g2048-container">
+    <div class="g2048-hud">
+      <div class="g2048-score-box">
+        <div class="g2048-score-label">分数</div>
+        <div class="g2048-score-val" id="score">0</div>
+      </div>
+      <div class="g2048-score-box">
+        <div class="g2048-score-label">最高</div>
+        <div class="g2048-score-val" id="best">0</div>
+      </div>
+    </div>
+
+    <div class="g2048-board" id="board">
+      <!-- 16 background cells -->
+      <div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div>
+      <div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div>
+      <div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div>
+      <div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div><div class="g2048-cell"></div>
+      <div class="g2048-tile-layer" id="tileLayer"></div>
+    </div>
+
+    <div class="g2048-btns">
+      <button class="g2048-btn" onclick="newGame()">新游戏</button>
+      <button class="g2048-btn" onclick="undoMove()">撤销</button>
+    </div>
+    <p class="g2048-tip">方向键 / 滑动 控制，合成 2048 即可通关</p>
+  </div>
+
+  <div class="g2048-overlay hidden" id="overlay">
+    <h2 id="overlayTitle">游戏结束</h2>
+    <p id="overlayMsg"></p>
+    <div style="display:flex;gap:12px;">
+      <button class="g2048-btn" onclick="newGame()">再来一局</button>
+      <button class="g2048-btn" id="keepGoingBtn" onclick="keepGoing()" style="display:none;">继续挑战</button>
+    </div>
+  </div>
+
+  <footer class="page-footer">made with ♥ by 董家才子</footer>
+
+  <script>
+    let grid = [], score = 0, bestScore = parseInt(localStorage.getItem('g2048_best') || '0');
+    let prevState = null, won = false, keepPlaying = false;
+    const tileLayer = document.getElementById('tileLayer');
+
+    document.getElementById('best').textContent = bestScore;
+
+    function newGame() {
+      grid = Array.from({length: 4}, () => Array(4).fill(0));
+      score = 0; won = false; keepPlaying = false; prevState = null;
+      document.getElementById('overlay').classList.add('hidden');
+      document.getElementById('score').textContent = 0;
+      addRandom(); addRandom();
+      render();
+    }
+
+    function addRandom() {
+      const empty = [];
+      for (let r = 0; r < 4; r++)
+        for (let c = 0; c < 4; c++)
+          if (grid[r][c] === 0) empty.push([r, c]);
+      if (empty.length === 0) return;
+      const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+      grid[r][c] = Math.random() < 0.9 ? 2 : 4;
+    }
+
+    function render() {
+      tileLayer.innerHTML = '';
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          const v = grid[r][c];
+          if (v === 0) continue;
+          const tile = document.createElement('div');
+          tile.className = 'g2048-tile';
+          tile.dataset.value = v;
+          tile.textContent = v;
+          tile.style.gridRow = r + 1;
+          tile.style.gridColumn = c + 1;
+          tileLayer.appendChild(tile);
+        }
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        localStorage.setItem('g2048_best', bestScore);
+        document.getElementById('best').textContent = bestScore;
+      }
+    }
+
+    function saveState() {
+      prevState = { grid: grid.map(r => [...r]), score };
+    }
+
+    function undoMove() {
+      if (!prevState) return;
+      grid = prevState.grid;
+      score = prevState.score;
+      document.getElementById('score').textContent = score;
+      prevState = null;
+      render();
+    }
+
+    function slide(row) {
+      let arr = row.filter(v => v !== 0);
+      const result = [];
+      let gained = 0;
+      for (let i = 0; i < arr.length; i++) {
+        if (i + 1 < arr.length && arr[i] === arr[i + 1]) {
+          const merged = arr[i] * 2;
+          result.push(merged);
+          gained += merged;
+          if (merged === 2048) won = true;
+          i++;
+        } else {
+          result.push(arr[i]);
+        }
+      }
+      while (result.length < 4) result.push(0);
+      return { result, gained };
+    }
+
+    function move(dir) {
+      saveState();
+      let moved = false;
+
+      if (dir === 'left') {
+        for (let r = 0; r < 4; r++) {
+          const { result, gained } = slide(grid[r]);
+          if (grid[r].join(',') !== result.join(',')) moved = true;
+          grid[r] = result;
+          score += gained;
+        }
+      } else if (dir === 'right') {
+        for (let r = 0; r < 4; r++) {
+          const { result, gained } = slide([...grid[r]].reverse());
+          result.reverse();
+          if (grid[r].join(',') !== result.join(',')) moved = true;
+          grid[r] = result;
+          score += gained;
+        }
+      } else if (dir === 'up') {
+        for (let c = 0; c < 4; c++) {
+          const col = [grid[0][c], grid[1][c], grid[2][c], grid[3][c]];
+          const { result, gained } = slide(col);
+          if (col.join(',') !== result.join(',')) moved = true;
+          for (let r = 0; r < 4; r++) grid[r][c] = result[r];
+          score += gained;
+        }
+      } else if (dir === 'down') {
+        for (let c = 0; c < 4; c++) {
+          const col = [grid[3][c], grid[2][c], grid[1][c], grid[0][c]];
+          const { result, gained } = slide(col);
+          result.reverse();
+          const orig = [grid[0][c], grid[1][c], grid[2][c], grid[3][c]];
+          if (orig.join(',') !== result.join(',')) moved = true;
+          for (let r = 0; r < 4; r++) grid[r][c] = result[r];
+          score += gained;
+        }
+      }
+
+      if (moved) {
+        addRandom();
+        document.getElementById('score').textContent = score;
+        render();
+        if (won && !keepPlaying) {
+          showOverlay('🎉 通关！', `得分 ${score}，你太强了！`, true);
+        } else if (isGameOver()) {
+          showOverlay('游戏结束', `最终得分 ${score}`, false);
+        }
+      } else {
+        prevState = null;
+      }
+    }
+
+    function isGameOver() {
+      for (let r = 0; r < 4; r++)
+        for (let c = 0; c < 4; c++) {
+          if (grid[r][c] === 0) return false;
+          if (c < 3 && grid[r][c] === grid[r][c + 1]) return false;
+          if (r < 3 && grid[r][c] === grid[r + 1][c]) return false;
+        }
+      return true;
+    }
+
+    function showOverlay(title, msg, canContinue) {
+      document.getElementById('overlayTitle').textContent = title;
+      document.getElementById('overlayMsg').textContent = msg;
+      document.getElementById('keepGoingBtn').style.display = canContinue ? '' : 'none';
+      document.getElementById('overlay').classList.remove('hidden');
+    }
+
+    function keepGoing() {
+      keepPlaying = true;
+      document.getElementById('overlay').classList.add('hidden');
+    }
+
+    document.addEventListener('keydown', e => {
+      const map = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down' };
+      if (map[e.key]) { e.preventDefault(); move(map[e.key]); }
+    });
+
+    // Touch/swipe
+    let touchStart = null;
+    document.addEventListener('touchstart', e => { touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; });
+    document.addEventListener('touchend', e => {
+      if (!touchStart) return;
+      const dx = e.changedTouches[0].clientX - touchStart.x;
+      const dy = e.changedTouches[0].clientY - touchStart.y;
+      touchStart = null;
+      if (Math.abs(dx) < 30 && Math.abs(dy) < 30) return;
+      if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left');
+      else move(dy > 0 ? 'down' : 'up');
+    });
+
+    newGame();
+  </script>
+</body>
+</html>

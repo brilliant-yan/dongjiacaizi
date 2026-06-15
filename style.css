@@ -84,9 +84,12 @@ body {
 /* === Card Nav === */
 .card-nav {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-bottom: 48px;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .card {
@@ -124,7 +127,26 @@ body {
   line-height: 1.4;
 }
 
+.card-tag {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.tag-progression { background: #e8f5e9; color: #2e7d32; }
+.tag-difficulty { background: #fff3e0; color: #e65100; }
+.tag-endless { background: #e3f2fd; color: #1565c0; }
+.tag-casual { background: #fce4ec; color: #c62828; }
+
 .card-game { border-top: 3px solid #ff6b6b; }
+.card-block { border-top: 3px solid #f97316; }
+.card-type { border-top: 3px solid #8b5cf6; }
+.card-memory { border-top: 3px solid #6366f1; }
+.card-2048 { border-top: 3px solid #06b6d4; }
 .card-pet { border-top: 3px solid #51cf66; }
 .card-gallery { border-top: 3px solid #ffd43b; }
 

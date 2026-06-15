@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>打字大作战 ⌨</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .type-body { background: #0f0f23; color: #ccc; min-height: 100vh; }
+    .type-body .page-header { background: #1a1a3e; border-color: #333; }
+    .type-body .page-title { color: #eee; }
+    .type-body .back-link { color: #64b5f6; }
+
+    .type-container { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+
+    .diff-select { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; justify-content: center; }
+    .diff-btn {
+      padding: 8px 20px; border: 2px solid #333; border-radius: 20px;
+      background: transparent; color: #aaa; font-size: 14px; cursor: pointer; transition: all 0.2s;
+    }
+    .diff-btn:hover, .diff-btn.active { border-color: #00d4aa; color: #00d4aa; }
+
+    .type-hud { display: flex; gap: 24px; margin-bottom: 12px; font-size: 15px; font-weight: 600; }
+    .hud-lives { color: #ff6b6b; }
+    .hud-score { color: #00d4aa; }
+    .hud-level { color: #ffd43b; }
+
+    .type-arena {
+      position: relative; width: 400px; max-width: 90vw; height: 400px;
+      border: 1px solid #333; border-radius: 12px; overflow: hidden;
+      background: #1a1a2e;
+    }
+
+    .falling-word {
+      position: absolute; white-space: nowrap; font-weight: 700;
+      font-size: 16px; transition: top 0.1s linear; padding: 4px 10px;
+      border-radius: 6px; background: rgba(255,255,255,0.05);
+    }
+
+    .falling-word.active { color: #00d4aa; box-shadow: 0 0 12px rgba(0,212,170,0.4); background: rgba(0,212,170,0.1); }
+    .falling-word .typed-part { color: #555; }
+
+    .type-input-area { margin-top: 16px; width: 400px; max-width: 90vw; }
+    #typeInput {
+      width: 100%; padding: 12px 16px; border: 2px solid #333; border-radius: 8px;
+      background: #1a1a2e; color: #00d4aa; font-size: 18px; font-family: 'SF Mono', 'Fira Code', monospace;
+      outline: none; transition: border-color 0.2s;
+    }
+    #typeInput:focus { border-color: #00d4aa; }
+    #typeInput::placeholder { color: #555; }
+
+    .type-overlay {
+      position: absolute; inset: 0; background: rgba(15,15,35,0.92);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 14px; padding: 20px;
+    }
+    .type-overlay.hidden { display: none; }
+    .type-overlay h2 { color: #fff; font-size: 24px; }
+    .type-overlay p { color: #aaa; font-size: 14px; text-align: center; line-height: 1.8; }
+    .type-overlay .big-score { font-size: 48px; font-weight: 700; color: #00d4aa; }
+
+    .btn-type {
+      padding: 12px 32px; border: none; border-radius: 8px;
+      background: #00d4aa; color: #0f0f23; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: transform 0.15s;
+    }
+    .btn-type:hover { transform: scale(1.05); }
+
+    .type-progress { margin-top: 12px; font-size: 13px; color: #666; }
+
+    .type-body .page-footer { color: rgba(255,255,255,0.3); }
+  </style>
+</head>
+<body class="page-body type-body">
+  <header class="page-header">
+    <div class="page-title"><span class="page-title-icon">⌨</span>打字大作战</div>
+    <a href="./" class="back-link">← 回首页</a>
+  </header>
+
+  <div class="type-container">
+    <div class="diff-select">
+      <button class="diff-btn active" data-diff="easy" onclick="setDiff('easy')">🟢 实习生</button>
+      <button class="diff-btn" data-diff="normal" onclick="setDiff('normal')">🟡 打工人</button>
+      <button class="diff-btn" data-diff="hard" onclick="setDiff('hard')">🔴 摸鱼王</button>
+    </div>
+
+    <div class="type-hud">
+      <span class="hud-lives" id="lives">♥♥♥</span>
+      <span>分数 <span class="hud-score" id="score">0</span></span>
+      <span>等级 <span class="hud-level" id="level">1</span></span>
+    </div>
+
+    <div class="type-arena" id="arena">
+      <div class="type-overlay" id="startOverlay">
+        <h2>⌨ 打字大作战</h2>
+        <p>
+          工作任务从天而降！<br>
+          快速输入单词击落它们<br>
+          漏掉一个扣一颗 ♥
+        </p>
+        <button class="btn-type" id="startBtn" onclick="startGame()">开始打字</button>
+      </div>
+      <div class="type-overlay hidden" id="endOverlay">
+        <h2>下班了！</h2>
+        <div class="big-score" id="finalScore">0</div>
+        <p id="endComment"></p>
+        <button class="btn-type" onclick="restartGame()">再来一局</button>
+      </div>
+    </div>
+
+    <div class="type-input-area">
+      <input type="text" id="typeInput" placeholder="在这里输入..." autocomplete="off" autocapitalize="off" spellcheck="false" disabled>
+    </div>
+    <p class="type-progress" id="progress">下一个等级: 20分</p>
+  </div>
+
+  <footer class="page-footer">made with ♥ by 董家才子</footer>
+
+  <script>
+    const WORDS = {
+      easy: ['cat','dog','run','sun','tea','cup','hat','pen','box','red','big','hot','map','key','fan','jam','log','net','owl','pie'],
+      normal: ['coffee','meeting','report','review','deploy','commit','branch','update','design','launch','budget','refactor','docker','sprint','ticket','debug','backup','refine','sprint','urgent'],
+      hard: ['quarterly','algorithm','deadline','synergize','paradigm','blockchain','infrastructure','optimization','stakeholder','deliverable','retrospective','microservices','asynchronous','kubernetes','scalability','orchestration']
+    };
+
+    const DIFF = {
+      easy:   { speed: 0.3, spawnInterval: 3000, words: 'easy',   speedGrowth: 0.02, spawnShrink: 150 },
+      normal: { speed: 0.5, spawnInterval: 2200, words: 'normal', speedGrowth: 0.03, spawnShrink: 120 },
+      hard:   { speed: 0.7, spawnInterval: 1600, words: 'hard',   speedGrowth: 0.04, spawnShrink: 100 },
+    };
+
+    let diff = 'easy', falling = [], score = 0, lives = 3, level = 1;
+    let gameRunning = false, activeWord = null, spawnTimer = null, frameTimer = null;
+    let currentSpeed, currentSpawn;
+
+    const arena = document.getElementById('arena');
+    const input = document.getElementById('typeInput');
+    const arenaRect = { w: 400, h: 400 };
+
+    function setDiff(d) {
+      diff = d;
+      document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === d));
+    }
+
+    function getWords() { return WORDS[DIFF[diff].words]; }
+
+    function spawnWord() {
+      if (!gameRunning) return;
+      const words = getWords();
+      const text = words[Math.floor(Math.random() * words.length)];
+      const el = document.createElement('div');
+      el.className = 'falling-word';
+      el.textContent = text;
+
+      const maxW = arena.clientWidth - text.length * 10 - 20;
+      const x = Math.max(8, Math.random() * maxW);
+      el.style.left = x + 'px';
+      el.style.top = '-30px';
+      arena.appendChild(el);
+
+      falling.push({ el, text, y: -30, typed: 0 });
+    }
+
+    function startGame() {
+      document.getElementById('startOverlay').classList.add('hidden');
+      document.getElementById('endOverlay').classList.add('hidden');
+      falling.forEach(w => w.el.remove());
+      falling = []; score = 0; lives = 3; level = 1; activeWord = null;
+      currentSpeed = DIFF[diff].speed;
+      currentSpawn = DIFF[diff].spawnInterval;
+      gameRunning = true;
+      updateHUD();
+      input.disabled = false;
+      input.value = '';
+      input.focus();
+
+      spawnWord();
+      scheduleSpawn();
+      gameLoop();
+    }
+
+    function restartGame() { startGame(); }
+
+    function scheduleSpawn() {
+      clearTimeout(spawnTimer);
+      if (!gameRunning) return;
+      spawnTimer = setTimeout(() => {
+        spawnWord();
+        scheduleSpawn();
+      }, currentSpawn);
+    }
+
+    function gameLoop() {
+      if (!gameRunning) return;
+      falling.forEach(w => {
+        w.y += currentSpeed;
+        w.el.style.top = w.y + 'px';
+      });
+
+      for (let i = falling.length - 1; i >= 0; i--) {
+        if (falling[i].y > arena.clientHeight - 20) {
+          falling[i].el.remove();
+          falling.splice(i, 1);
+          lives--;
+          activeWord = null;
+          updateHUD();
+          if (lives <= 0) { endGame(); return; }
+        }
+      }
+
+      frameTimer = requestAnimationFrame(gameLoop);
+    }
+
+    input.addEventListener('input', () => {
+      const val = input.value.toLowerCase().trim();
+      if (!val) { clearActive(); return; }
+
+      if (activeWord) {
+        if (activeWord.text.startsWith(val)) {
+          activeWord.typed = val.length;
+          activeWord.el.innerHTML = `<span class="typed-part">${val}</span>${activeWord.text.slice(val.length)}`;
+          if (val === activeWord.text) {
+            destroyWord(activeWord);
+            input.value = '';
+            activeWord = null;
+          }
+        } else {
+          clearActive();
+          findAndActivate(val);
+        }
+      } else {
+        findAndActivate(val);
+      }
+    });
+
+    function findAndActivate(val) {
+      let best = null;
+      for (const w of falling) {
+        if (w.text.startsWith(val)) {
+          if (!best || w.y > best.y) best = w;
+        }
+      }
+      clearActive();
+      if (best) {
+        activeWord = best;
+        best.el.classList.add('active');
+        best.typed = val.length;
+        best.el.innerHTML = `<span class="typed-part">${val}</span>${best.text.slice(val.length)}`;
+        if (val === best.text) {
+          destroyWord(best);
+          input.value = '';
+          activeWord = null;
+        }
+      }
+    }
+
+    function clearActive() {
+      if (activeWord) {
+        activeWord.el.classList.remove('active');
+        activeWord.el.textContent = activeWord.text;
+        activeWord.typed = 0;
+      }
+      activeWord = null;
+    }
+
+    function destroyWord(w) {
+      w.el.style.transition = 'transform 0.2s, opacity 0.2s';
+      w.el.style.transform = 'scale(1.5)';
+      w.el.style.opacity = '0';
+      setTimeout(() => w.el.remove(), 200);
+      const idx = falling.indexOf(w);
+      if (idx >= 0) falling.splice(idx, 1);
+
+      const points = w.text.length * (diff === 'hard' ? 3 : diff === 'normal' ? 2 : 1);
+      score += points;
+      checkLevelUp();
+      updateHUD();
+    }
+
+    function checkLevelUp() {
+      const newLevel = Math.floor(score / 20) + 1;
+      if (newLevel > level) {
+        level = newLevel;
+        currentSpeed += DIFF[diff].speedGrowth;
+        currentSpawn = Math.max(600, currentSpawn - DIFF[diff].spawnShrink);
+        updateHUD();
+      }
+    }
+
+    function updateHUD() {
+      document.getElementById('lives').textContent = '♥'.repeat(Math.max(0, lives));
+      document.getElementById('score').textContent = score;
+      document.getElementById('level').textContent = level;
+      document.getElementById('progress').textContent = level < 10
+        ? `下一个等级: ${(level) * 20}分`
+        : '已达最高等级！';
+    }
+
+    function endGame() {
+      gameRunning = false;
+      clearTimeout(spawnTimer);
+      cancelAnimationFrame(frameTimer);
+      input.disabled = true;
+
+      document.getElementById('finalScore').textContent = score;
+      let comment;
+      if (score >= 200) comment = '键盘侠本侠！手速逆天 ⌨🔥';
+      else if (score >= 100) comment = '打字达人，效率拉满！💪';
+      else if (score >= 50) comment = '还行，继续练手速~ 🖐';
+      else comment = '建议回去练练打字，老板在看着 👀';
+      document.getElementById('endComment').textContent = comment;
+      document.getElementById('endOverlay').classList.remove('hidden');
+    }
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { input.value = ''; clearActive(); }
+    });
+  </script>
+</body>
+</html>
