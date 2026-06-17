@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今天吃什么 🎲</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-body food-body">
+  <header class="page-header">
+    <div class="page-title"><span class="page-title-icon">🎲</span>今天吃什么</div>
+    <a href="./" class="back-link">← 回首页</a>
+  </header>
+
+  <div class="food-container">
+    <div class="food-wheel-wrap">
+      <div class="food-wheel" id="wheel">
+        <div class="wheel-section" data-index="0">🍜 面条</div>
+        <div class="wheel-section" data-index="1">🍚 米饭</div>
+        <div class="wheel-section" data-index="2">🥟 饺子</div>
+        <div class="wheel-section" data-index="3">🍔 汉堡</div>
+        <div class="wheel-section" data-index="4">🍕 披萨</div>
+        <div class="wheel-section" data-index="5">🍱 盖饭</div>
+        <div class="wheel-section" data-index="6">🥗 沙拉</div>
+        <div class="wheel-section" data-index="7">🍜 米粉</div>
+      </div>
+      <div class="wheel-pointer">▼</div>
+    </div>
+
+    <button class="food-btn" id="spinBtn" onclick="spinWheel()">🎲 转一下！</button>
+
+    <div class="food-result hidden" id="result">
+      <div class="food-result-icon">🎉</div>
+      <div class="food-result-text" id="resultText"></div>
+      <button class="food-btn-small" onclick="spinWheel()">不满意？再转一次</button>
+    </div>
+
+    <div class="food-tips">
+      <p>💡 选择困难症终结者</p>
+      <p>命运之轮会告诉你今天吃什么</p>
+    </div>
+  </div>
+
+  <footer class="page-footer">made with ♥ by 董家才子</footer>
+
+  <script src="common.js"></script>
+  <script>
+    let spinning = false;
+    let currentRotation = 0;
+
+    const foods = [
+      '🍜 面条', '🍚 米饭', '🥟 饺子', '🍔 汉堡',
+      '🍕 披萨', '🍱 盖饭', '🥗 沙拉', '🍜 米粉'
+    ];
+
+    function spinWheel() {
+      if (spinning) return;
+      spinning = true;
+
+      document.getElementById('result').classList.add('hidden');
+      const wheel = document.getElementById('wheel');
+      const btn = document.getElementById('spinBtn');
+      btn.disabled = true;
+
+      // 随机 5-8 圈 + 随机停止位置
+      const spins = 5 + Math.random() * 3;
+      const extraRotation = Math.random() * 360;
+      const totalRotation = spins * 360 + extraRotation;
+      currentRotation += totalRotation;
+
+      wheel.style.transform = `rotate(${currentRotation}deg)`;
+
+      // 等待动画结束
+      setTimeout(() => {
+        spinning = false;
+        btn.disabled = false;
+
+        // 计算停止位置（指针在顶部，所以要从 360 减去旋转角度）
+        const normalizedRotation = currentRotation % 360;
+        const sectionAngle = 360 / foods.length;
+        const pointerOffset = (360 - normalizedRotation + sectionAngle / 2) % 360;
+        const winnerIndex = Math.floor(pointerOffset / sectionAngle);
+        const winner = foods[winnerIndex];
+
+        document.getElementById('resultText').textContent = winner;
+        document.getElementById('result').classList.remove('hidden');
+      }, 4000);
+    }
+
+    trackGamePlayed('food');
+  </script>
+</body>
+</html>

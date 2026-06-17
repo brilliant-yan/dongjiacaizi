@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>假装写代码 💻</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-body code-body">
+  <header class="page-header">
+    <div class="page-title"><span class="page-title-icon">💻</span>假装写代码</div>
+    <a href="./" class="back-link">← 回首页</a>
+  </header>
+
+  <div class="code-container">
+    <div class="code-stats">
+      <div class="code-stat">
+        <div class="code-stat-label">按键次数</div>
+        <div class="code-stat-value" id="keyCount">0</div>
+      </div>
+      <div class="code-stat">
+        <div class="code-stat-label">代码行数</div>
+        <div class="code-stat-value" id="lineCount">0</div>
+      </div>
+      <div class="code-stat">
+        <div class="code-stat-label">假装时长</div>
+        <div class="code-stat-value" id="timeCount">0s</div>
+      </div>
+    </div>
+
+    <div class="code-editor" id="editor">
+      <div class="code-line-numbers" id="lineNumbers">1</div>
+      <pre class="code-content" id="codeContent"></pre>
+    </div>
+
+    <div class="code-hint">
+      <p>⌨️ 随便按键盘上的任意键</p>
+      <p>看起来像在疯狂写代码！</p>
+    </div>
+
+    <button class="code-btn" onclick="clearCode()">🗑️ 清空重来</button>
+  </div>
+
+  <footer class="page-footer">made with ♥ by 董家才子</footer>
+
+  <script src="common.js"></script>
+  <script>
+    let keyCount = 0;
+    let lineCount = 1;
+    let startTime = Date.now();
+    let codeLines = [''];
+
+    const codeSnippets = [
+      'import numpy as np',
+      'from tensorflow import keras',
+      'def optimize_model(params):',
+      '    learning_rate = 0.001',
+      '    optimizer = Adam(lr=learning_rate)',
+      '    model.compile(optimizer=optimizer)',
+      '    return model.train(X, y)',
+      '',
+      'class NeuralNetwork:',
+      '    def __init__(self, layers):',
+      '        self.weights = []',
+      '        self.biases = []',
+      '        for i in range(len(layers)-1):',
+      '            w = np.random.randn(layers[i], layers[i+1])',
+      '            b = np.zeros((1, layers[i+1]))',
+      '            self.weights.append(w)',
+      '            self.biases.append(b)',
+      '',
+      'async def fetch_data(url):',
+      '    response = await axios.get(url)',
+      '    if response.status == 200:',
+      '        return response.data',
+      '    throw new Error("Network error")',
+      '',
+      'function quickSort(arr) {',
+      '    if (arr.length <= 1) return arr;',
+      '    const pivot = arr[0];',
+      '    const left = arr.filter(x => x < pivot);',
+      '    const right = arr.filter(x => x > pivot);',
+      '    return [...quickSort(left), pivot, ...quickSort(right)];',
+      '}',
+      '',
+      'SELECT u.name, COUNT(o.id) as order_count',
+      'FROM users u',
+      'LEFT JOIN orders o ON u.id = o.user_id',
+      'WHERE u.created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)',
+      'GROUP BY u.id',
+      'HAVING order_count > 5;',
+      '',
+      'docker run -d --name redis -p 6379:6379 redis:alpine',
+      'kubectl apply -f deployment.yaml',
+      'helm install my-app ./charts/my-app',
+      '',
+      'git commit -m "fix: resolve critical bug in production"',
+      'git push origin main --force',
+      '# 等等，不要 force push！',
+      '',
+      'console.log("Hello, World!");',
+      'print("Debug: variable =", var)',
+      '// TODO: 明天再优化这个',
+      '# FIXME: 这里有个 bug 但不知道在哪',
+    ];
+
+    let snippetIndex = 0;
+    let charIndex = 0;
+
+    function updateStats() {
+      document.getElementById('keyCount').textContent = keyCount;
+      document.getElementById('lineCount').textContent = lineCount;
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      document.getElementById('timeCount').textContent = elapsed + 's';
+    }
+
+    function addCodeChar(char) {
+      if (snippetIndex >= codeSnippets.length) {
+        snippetIndex = 0;
+      }
+
+      const currentSnippet = codeSnippets[snippetIndex];
+
+      if (charIndex >= currentSnippet.length) {
+        // 完成一行，开始新行
+        codeLines.push('');
+        lineCount++;
+        snippetIndex = (snippetIndex + 1) % codeSnippets.length;
+        charIndex = 0;
+      } else {
+        // 添加字符
+        codeLines[codeLines.length - 1] += currentSnippet[charIndex];
+        charIndex++;
+      }
+
+      renderCode();
+      updateStats();
+    }
+
+    function renderCode() {
+      const content = codeLines.join('\n');
+      document.getElementById('codeContent').textContent = content;
+
+      // 更新行号
+      const lineNumbers = Array.from({length: lineCount}, (_, i) => i + 1).join('\n');
+      document.getElementById('lineNumbers').textContent = lineNumbers;
+
+      // 自动滚动到底部
+      const editor = document.getElementById('editor');
+      editor.scrollTop = editor.scrollHeight;
+    }
+
+    function clearCode() {
+      keyCount = 0;
+      lineCount = 1;
+      startTime = Date.now();
+      codeLines = [''];
+      snippetIndex = 0;
+      charIndex = 0;
+      renderCode();
+      updateStats();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      // 忽略修饰键
+      if (e.key === 'Shift' || e.key === 'Control' || e.key === 'Alt' || e.key === 'Meta') {
+        return;
+      }
+
+      keyCount++;
+
+      if (e.key === 'Enter') {
+        // 回车键：直接换行
+        codeLines.push('');
+        lineCount++;
+        snippetIndex = (snippetIndex + 1) % codeSnippets.length;
+        charIndex = 0;
+        renderCode();
+        updateStats();
+      } else if (e.key === 'Backspace') {
+        // 退格键：删除最后一个字符
+        if (codeLines[codeLines.length - 1].length > 0) {
+          codeLines[codeLines.length - 1] = codeLines[codeLines.length - 1].slice(0, -1);
+        } else if (codeLines.length > 1) {
+          codeLines.pop();
+          lineCount--;
+        }
+        renderCode();
+        updateStats();
+      } else {
+        // 其他键：添加代码字符
+        addCodeChar(e.key);
+      }
+    });
+
+    // 每秒更新时长
+    setInterval(updateStats, 1000);
+
+    renderCode();
+    updateStats();
+    trackGamePlayed('code');
+  </script>
+</body>
+</html>

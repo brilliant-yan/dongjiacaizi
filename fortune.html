@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今日运势 🔮</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-body fortune-body">
+  <header class="page-header">
+    <div class="page-title"><span class="page-title-icon">🔮</span>今日运势</div>
+    <a href="./" class="back-link">← 回首页</a>
+  </header>
+
+  <div class="fortune-container">
+    <div class="fortune-date" id="dateDisplay"></div>
+
+    <div class="fortune-card">
+      <div class="fortune-overall">
+        <div class="fortune-overall-label">今日综合运势</div>
+        <div class="fortune-overall-stars" id="overallStars"></div>
+        <div class="fortune-overall-text" id="overallText"></div>
+      </div>
+
+      <div class="fortune-categories">
+        <div class="fortune-item">
+          <div class="fortune-item-icon">💼</div>
+          <div class="fortune-item-name">工作运</div>
+          <div class="fortune-item-stars" id="workStars"></div>
+          <div class="fortune-item-tip" id="workTip"></div>
+        </div>
+
+        <div class="fortune-item">
+          <div class="fortune-item-icon">🐟</div>
+          <div class="fortune-item-name">摸鱼运</div>
+          <div class="fortune-item-stars" id="moyuStars"></div>
+          <div class="fortune-item-tip" id="moyuTip"></div>
+        </div>
+
+        <div class="fortune-item">
+          <div class="fortune-item-icon">💕</div>
+          <div class="fortune-item-name">桃花运</div>
+          <div class="fortune-item-stars" id="loveStars"></div>
+          <div class="fortune-item-tip" id="loveTip"></div>
+        </div>
+
+        <div class="fortune-item">
+          <div class="fortune-item-icon">💰</div>
+          <div class="fortune-item-name">财运</div>
+          <div class="fortune-item-stars" id="moneyStars"></div>
+          <div class="fortune-item-tip" id="moneyTip"></div>
+        </div>
+      </div>
+
+      <div class="fortune-lucky">
+        <div class="fortune-lucky-item">
+          <div class="fortune-lucky-label">幸运颜色</div>
+          <div class="fortune-lucky-value" id="luckyColor"></div>
+        </div>
+        <div class="fortune-lucky-item">
+          <div class="fortune-lucky-label">幸运数字</div>
+          <div class="fortune-lucky-value" id="luckyNumber"></div>
+        </div>
+        <div class="fortune-lucky-item">
+          <div class="fortune-lucky-label">幸运游戏</div>
+          <div class="fortune-lucky-value" id="luckyGame"></div>
+        </div>
+      </div>
+
+      <div class="fortune-advice" id="advice"></div>
+    </div>
+
+    <div class="fortune-footer-tip">
+      <p>✨ 运势仅供参考，摸鱼还需谨慎</p>
+      <p>每天 0:00 自动更新</p>
+    </div>
+  </div>
+
+  <footer class="page-footer">made with ♥ by 董家才子</footer>
+
+  <script src="common.js"></script>
+  <script>
+    // 日期 hash 函数
+    function dateHash(date) {
+      const str = date.toDateString();
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return Math.abs(hash);
+    }
+
+    // 伪随机数生成器
+    function seededRandom(seed) {
+      let s = seed;
+      return function() {
+        s = (s * 9301 + 49297) % 233280;
+        return s / 233280;
+      };
+    }
+
+    // 生成星级评分
+    function generateStars(count) {
+      return '★'.repeat(count) + '☆'.repeat(5 - count);
+    }
+
+    // 运势文案库
+    const workTips = [
+      '今天适合写代码，bug 会自动消失',
+      '开会时记得带笔记本，假装在记重点',
+      '老板今天心情不错，可以提加薪',
+      '小心 deadline，建议提前摸鱼',
+      '今天工作效率极高，适合加班（开玩笑的）',
+      '邮件会被秒回，但可能是自动回复',
+      '今天适合整理文档，反正也没人看',
+      '产品经理今天不会来找你',
+    ];
+
+    const moyuTips = [
+      '老板今天很忙，摸鱼安全系数 95%',
+      '建议玩打砖块，手感极佳',
+      '摸鱼被发现的概率极低，放心大胆',
+      '今天适合云养猫，猫咪会很高兴',
+      '摸鱼运爆棚，建议全天摸鱼',
+      '小心同事举报，建议戴耳机',
+      '今天摸鱼效率翻倍，建议挑战 2048',
+      '摸鱼大师就是你，无人能敌',
+    ];
+
+    const loveTips = [
+      '今天适合和 crush 聊天',
+      '桃花运一般，建议先摸鱼',
+      '会有人主动找你搭话',
+      '今天不适合表白，容易被拒绝',
+      '桃花运爆棚，注意身边的人',
+      '单身狗今天也很快乐',
+      '今天适合暗恋，不适合表白',
+      '桃花运平平，不如玩游戏',
+    ];
+
+    const moneyTips = [
+      '今天适合理财，建议买彩票（开玩笑的）',
+      '财运一般，建议省着点花',
+      '今天会有意外收入（可能是退款）',
+      '财运爆棚，适合投资自己',
+      '今天不适合购物，容易冲动消费',
+      '财运动荡，建议存钱',
+      '今天会有人请客吃饭',
+      '财运平平，不如摸鱼赚时间',
+    ];
+
+    const overallTexts = [
+      '今天是个平凡的一天，适合摸鱼',
+      '运势不错，适合挑战新游戏',
+      '运势爆棚，建议全天摸鱼',
+      '运势一般，建议低调摸鱼',
+      '今天适合放松，别太拼命工作',
+      '运势平平，但摸鱼运会很好',
+      '今天是个好日子，适合玩游戏',
+      '运势起伏，建议多玩几局',
+    ];
+
+    const advices = [
+      '今日宜：摸鱼、玩游戏、云养猫',
+      '今日宜：写代码、开会、假装很忙',
+      '今日宜：放松、休息、什么都不做',
+      '今日宜：挑战 2048、打砖块、记忆翻牌',
+      '今日宜：摸鱼、喝茶、看窗外',
+      '今日宜：打字游戏、表情包、假装工作',
+      '今日宜：摸鱼一整天',
+      '今日宜：玩所有游戏，运势极佳',
+    ];
+
+    const colors = ['红色 🔴', '蓝色 🔵', '绿色 🟢', '黄色 🟡', '紫色 🟣', '橙色 🟠', '粉色 🩷', '黑色 ⚫'];
+    const games = ['摸鱼大作战 ✈', '打砖块 🧱', '打字大作战 ⌨', '记忆翻牌 🃏', '2048 🎯', '云养猫 🐱', '表情包库 🖼'];
+
+    // 生成今日运势
+    const today = new Date();
+    const hash = dateHash(today);
+    const random = seededRandom(hash);
+
+    // 显示日期
+    const dateStr = today.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    });
+    document.getElementById('dateDisplay').textContent = dateStr;
+
+    // 生成各项运势（1-5 星）
+    const workScore = Math.floor(random() * 5) + 1;
+    const moyuScore = Math.floor(random() * 5) + 1;
+    const loveScore = Math.floor(random() * 5) + 1;
+    const moneyScore = Math.floor(random() * 5) + 1;
+    const overallScore = Math.round((workScore + moyuScore + loveScore + moneyScore) / 4);
+
+    // 显示星级
+    document.getElementById('overallStars').textContent = generateStars(overallScore);
+    document.getElementById('workStars').textContent = generateStars(workScore);
+    document.getElementById('moyuStars').textContent = generateStars(moyuScore);
+    document.getElementById('loveStars').textContent = generateStars(loveScore);
+    document.getElementById('moneyStars').textContent = generateStars(moneyScore);
+
+    // 显示文案
+    document.getElementById('overallText').textContent = overallTexts[Math.floor(random() * overallTexts.length)];
+    document.getElementById('workTip').textContent = workTips[Math.floor(random() * workTips.length)];
+    document.getElementById('moyuTip').textContent = moyuTips[Math.floor(random() * moyuTips.length)];
+    document.getElementById('loveTip').textContent = loveTips[Math.floor(random() * loveTips.length)];
+    document.getElementById('moneyTip').textContent = moneyTips[Math.floor(random() * moneyTips.length)];
+
+    // 显示幸运项
+    document.getElementById('luckyColor').textContent = colors[Math.floor(random() * colors.length)];
+    document.getElementById('luckyNumber').textContent = Math.floor(random() * 100) + 1;
+    document.getElementById('luckyGame').textContent = games[Math.floor(random() * games.length)];
+
+    // 显示建议
+    document.getElementById('advice').textContent = '💡 ' + advices[Math.floor(random() * advices.length)];
+
+    trackGamePlayed('fortune');
+  </script>
+</body>
+</html>
