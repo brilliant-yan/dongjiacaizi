@@ -560,12 +560,206 @@
       lastEsc = now;
     }
     // F12 在伪装模式下震动警告
-    if (e.key === 'F12' && BossKey.isActive()) {
+    if (e.key === 'F12' && (BossKey.isActive() || ExcelBoss.isActive())) {
       e.preventDefault();
       if (navigator.vibrate) navigator.vibrate(200);
       ScreenShake.trigger(12, 400);
     }
+    // Alt+E — Excel 伪装表格
+    if (e.altKey && (e.key === 'e' || e.key === 'E')) {
+      e.preventDefault();
+      ExcelBoss.toggle();
+    }
+    // 两种伪装模式下按 Esc 关闭
+    if (e.key === 'Escape') {
+      if (ExcelBoss.isActive()) ExcelBoss.toggle();
+    }
   });
+
+  /* ========================================================
+   *  MoyuOS.ExcelBoss — 老板键 B：Excel 工作表伪装
+   *  触发：Alt+E
+   * ======================================================== */
+  const ExcelBoss = {
+    _active: false,
+    _el: null,
+    _selCell: null,
+    _data: {},
+
+    _seedData() {
+      const cols = ['A','B','C','D','E','F','G','H'];
+      const headers = ['项目名称','负责人','状态','Q1 预算','Q2 预算','Q3 预算','进度','备注'];
+      const rows = [
+        ['用户增长平台','张伟','进行中','120,000','135,000','150,000','68%','需跟进'],
+        ['数据中台重构','李娜','已完成','85,000','92,000','—','100%','已交付'],
+        ['AI 客服上线','王磊','进行中','200,000','180,000','210,000','45%','延期风险'],
+        ['营销自动化','刘洋','规划中','60,000','—','75,000','12%','待评审'],
+        ['移动端改版','陈静','进行中','95,000','110,000','105,000','72%','正常'],
+        ['安全审计','赵刚','已完成','45,000','50,000','—','100%','通过'],
+        ['供应链优化','周婷','进行中','150,000','165,000','170,000','38%','进行中'],
+        ['品牌升级','吴昊','规划中','300,000','—','350,000','5%','高层关注'],
+        ['内部培训体系','孙丽','进行中','30,000','35,000','40,000','55%','正常'],
+        ['海外拓展','郑凯','规划中','500,000','—','600,000','8%','待启动'],
+        ['ERP 升级','黄芳','进行中','220,000','240,000','230,000','61%','测试中'],
+        ['数据大屏','林杰','已完成','70,000','78,000','—','100%','已上线'],
+        ['流程数字化','何敏','进行中','110,000','125,000','140,000','49%','需协调'],
+        ['知识库建设','马超','规划中','40,000','—','55,000','15%','文档收集中'],
+        ['客户 CRM 2.0','杨洁','进行中','180,000','195,000','200,000','58%','灰度中'],
+      ];
+      const d = {};
+      headers.forEach((h, i) => { d[cols[i] + '1'] = h; });
+      rows.forEach((row, r) => {
+        row.forEach((cell, c) => { d[cols[c] + (r + 2)] = cell; });
+      });
+      return { cols, headers, rows, data: d };
+    },
+
+    toggle() {
+      if (this._active) this._deactivate();
+      else this._activate();
+    },
+
+    _activate() {
+      const seed = this._seedData();
+      this._data = seed.data;
+
+      const el = document.createElement('div');
+      el.className = 'excel-screen';
+
+      const formulaBar = `
+        <div class="excel-formula">
+          <div class="excel-formula-cell" id="excelCellRef">A1</div>
+          <span class="excel-formula-fx">fx</span>
+          <input class="excel-formula-input" id="excelFormulaInput" value="">
+        </div>`;
+
+      let gridHTML = '<table class="excel-grid"><thead><tr><th class="excel-rowhead"></th>';
+      seed.cols.forEach(c => { gridHTML += `<th class="excel-colhead">${c}</th>`; });
+      gridHTML += '</tr></thead><tbody>';
+
+      for (let r = 1; r <= 16; r++) {
+        gridHTML += `<tr><td class="excel-rowhead">${r}</td>`;
+        seed.cols.forEach(c => {
+          const key = c + r;
+          const val = seed.data[key] || '';
+          const cls = val ? '' : 'excel-empty';
+          gridHTML += `<td class="excel-cell ${cls}" data-key="${key}">${this._esc(val)}</td>`;
+        });
+        gridHTML += '</tr>';
+      }
+      gridHTML += '</tbody></table>';
+
+      el.innerHTML = `
+        <div class="excel-titlebar">
+          <span class="excel-icon">📊</span>
+          <span class="excel-title-text">项目季度预算跟踪表.xlsx - Excel</span>
+          <div class="excel-titlebar-btns">
+            <span class="excel-btn-min">—</span>
+            <span class="excel-btn-max">☐</span>
+            <span class="excel-btn-close" id="excelClose">✕</span>
+          </div>
+        </div>
+        <div class="excel-ribbon">
+          <div class="excel-tabs">
+            <span class="excel-tab active">开始</span>
+            <span class="excel-tab">插入</span>
+            <span class="excel-tab">页面布局</span>
+            <span class="excel-tab">公式</span>
+            <span class="excel-tab">数据</span>
+            <span class="excel-tab">审阅</span>
+            <span class="excel-tab">视图</span>
+          </div>
+          <div class="excel-toolbar">
+            <button class="excel-tool">B</button>
+            <button class="excel-tool" style="font-style:italic">I</button>
+            <button class="excel-tool" style="text-decoration:underline">U</button>
+            <span class="excel-tool-sep"></span>
+            <select class="excel-tool-select"><option>微软雅黑</option><option>Arial</option></select>
+            <select class="excel-tool-select sm"><option>11</option><option>12</option><option>14</option></select>
+            <span class="excel-tool-sep"></span>
+            <button class="excel-tool">🎨</button>
+            <button class="excel-tool">📋</button>
+            <button class="excel-tool">Σ</button>
+            <button class="excel-tool">📊</button>
+          </div>
+        </div>
+        ${formulaBar}
+        <div class="excel-grid-wrap">${gridHTML}</div>
+        <div class="excel-statusbar">
+          <span>就绪</span>
+          <span class="excel-status-right">Sheet1</span>
+          <span class="excel-status-right">平均值: ¥142,333</span>
+          <span class="excel-status-right">计数: 15</span>
+          <span class="excel-status-right">求和: ¥2,135,000</span>
+        </div>
+      `;
+
+      document.body.appendChild(el);
+      this._el = el;
+      this._active = true;
+      requestAnimationFrame(() => el.classList.add('show'));
+
+      // 关闭按钮
+      const closeBtn = document.getElementById('excelClose');
+      if (closeBtn) closeBtn.onclick = () => this._deactivate();
+
+      // 单元格点击
+      el.querySelectorAll('.excel-cell').forEach(cell => {
+        cell.addEventListener('click', () => this._selectCell(cell));
+        cell.addEventListener('dblclick', () => this._editCell(cell));
+      });
+
+      // 公式栏输入
+      const input = document.getElementById('excelFormulaInput');
+      if (input) {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && this._selCell) {
+            const key = this._selCell.dataset.key;
+            this._data[key] = input.value;
+            this._selCell.textContent = input.value;
+            input.blur();
+          }
+        });
+      }
+
+      // 阻止右键菜单
+      this._ctxHandler = (e) => e.preventDefault();
+      document.addEventListener('contextmenu', this._ctxHandler);
+    },
+
+    _esc(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    },
+
+    _selectCell(cell) {
+      if (this._selCell) this._selCell.classList.remove('selected');
+      cell.classList.add('selected');
+      this._selCell = cell;
+      const ref = document.getElementById('excelCellRef');
+      const input = document.getElementById('excelFormulaInput');
+      if (ref) ref.textContent = cell.dataset.key;
+      if (input) input.value = cell.textContent;
+    },
+
+    _editCell(cell) {
+      this._selectCell(cell);
+      const input = document.getElementById('excelFormulaInput');
+      if (input) { input.focus(); input.select(); }
+    },
+
+    _deactivate() {
+      document.removeEventListener('contextmenu', this._ctxHandler);
+      if (this._el) {
+        this._el.classList.add('excel-hide');
+        setTimeout(() => { this._el.remove(); this._el = null; }, 200);
+      }
+      this._active = false;
+    },
+
+    isActive() { return this._active; }
+  };
 
   /* ========================================================
    *  MoyuOS.Konami — Konami 秘籍（升级版）
@@ -713,6 +907,7 @@
     Storage,
     Achievements,
     BossKey,
+    ExcelBoss,
     Konami,
     Streak,
     Quantum,

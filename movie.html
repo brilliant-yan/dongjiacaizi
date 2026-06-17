@@ -25,9 +25,9 @@
     </div>
 
     <div class="movie-controls">
-      <button class="movie-btn active" onclick="playVideo('demo1', this)">🎬 演示短片</button>
-      <button class="movie-btn" onclick="playVideo('demo2', this)">🐰 动画短片</button>
-      <button class="movie-btn" onclick="playVideo('demo3', this)">📺 测试视频</button>
+      <button class="movie-btn active" onclick="playVideo('xiyy', this)">🐑 喜羊羊与灰太狼</button>
+      <button class="movie-btn" onclick="playVideo('scxfg', this)">👨‍🍳 神厨小福贵</button>
+      <button class="movie-btn" onclick="playVideo('hmlt', this)">🐱 虹猫蓝兔七侠传</button>
       <button class="movie-btn" onclick="toggleCustomInput(this)">📁 自定义视频</button>
     </div>
 
@@ -55,8 +55,8 @@
 
     <div class="movie-tips">
       <p>💡 建议佩戴耳机，假装在开会</p>
-      <p>📁 支持自定义视频URL，推荐存放于云盘或图床</p>
-      <p>🎯 推荐来源：Pexels、Mixkit、Pixabay 等免费视频站</p>
+      <p>📁 想看正片？用"自定义视频"粘贴 B站/网盘 等 mp4 链接</p>
+      <p>🎯 内置视频仅为演示片段，完整剧集请自行添加</p>
     </div>
   </div>
 
@@ -65,17 +65,17 @@
   <script src="common.js"></script>
   <script>
     const videos = {
-      demo1: {
+      xiyy: {
         url: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
-        name: '演示短片 - 大雄兔'
+        name: '喜羊羊与灰太狼'
       },
-      demo2: {
+      scxfg: {
         url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        name: '动画短片 - 大雄兔'
+        name: '神厨小福贵'
       },
-      demo3: {
+      hmlt: {
         url: 'https://www.w3schools.com/html/movie.mp4',
-        name: '测试视频'
+        name: '虹猫蓝兔七侠传'
       }
     };
 
