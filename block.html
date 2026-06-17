@@ -357,6 +357,7 @@
       if (lives === 3) unlockAchievement('block_perfect');
       document.getElementById('winScore').textContent = score;
       showOverlay('winOverlay');
+      reportScore('block', score);
     }
 
     function showLose() {
@@ -364,6 +365,7 @@
       document.getElementById('loseLevel').textContent = level + 1;
       document.getElementById('loseScore').textContent = score;
       showOverlay('loseOverlay');
+      reportScore('block', score);
     }
 
     // Controls

@@ -220,6 +220,7 @@
       else comment = '老板在你身后，别摸了 😱';
       document.getElementById('winComment').textContent = comment;
       document.getElementById('winOverlay').classList.remove('hidden');
+      reportScore('memory', Math.max(1, Math.floor(100 / ratio)));
     }
 
     function restartGame() { startGame(currentPairs); }

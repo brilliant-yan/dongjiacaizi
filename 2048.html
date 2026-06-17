@@ -290,6 +290,7 @@
       document.getElementById('overlayMsg').textContent = msg;
       document.getElementById('keepGoingBtn').style.display = canContinue ? '' : 'none';
       document.getElementById('overlay').classList.remove('hidden');
+      reportScore('g2048', score);
     }
 
     function keepGoing() {

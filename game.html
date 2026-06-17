@@ -170,6 +170,7 @@
             gameRunning = false;
             document.getElementById('finalScore').textContent = score;
             endOverlay.classList.remove('hidden');
+            reportScore('game', score);
           }
         }
       }

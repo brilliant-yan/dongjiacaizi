@@ -317,6 +317,7 @@
       else comment = '建议回去练练打字，老板在看着 👀';
       document.getElementById('endComment').textContent = comment;
       document.getElementById('endOverlay').classList.remove('hidden');
+      reportScore('type', score);
     }
 
     input.addEventListener('keydown', e => {

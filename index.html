@@ -70,7 +70,11 @@
 
     <footer class="home-footer">
       <p>made with <span class="heart">♥</span> by 董家才子</p>
-      <p class="footer-hint">💡 试试按 ESC 键，或者输入上上下下左右左右BA</p>
+      <div class="marquee-wrap">
+        <div class="marquee-text">
+          <span>⚠️ 系统提示：双击 ESC 启动紧急伪装 | 输入 ↑↑↓↓←→←→BA 解锁开发者协议 | AI 助手已就绪</span>
+        </div>
+      </div>
     </footer>
   </div>
 
@@ -85,33 +89,47 @@
   </div>
 
   <script src="common.js"></script>
+  <script src="neural-bg.js"></script>
+  <script src="ai-assistant.js"></script>
   <script>
-    // Typing effect
-    const fullText = '来自 董家才子 的小问候 ✿';
-    const typingEl = document.getElementById('typingText');
-    let charIdx = 0;
-    function typeChar() {
-      if (charIdx < fullText.length) {
-        typingEl.textContent += fullText[charIdx];
+    // Terminal boot sequence typing effect
+    const bootLines = [
+      '[SYS] 初始化摸鱼协议...',
+      '[GPU] 算力调度就绪',
+      '[AI] 神经网络连接已建立',
+      '[SEC] 反老板检测系统启动',
+      '[OK] 所有模块加载完成',
+      '',
+      '[AI] 欢迎回来，董家才子 ✿',
+    ];
+
+    const terminalEl = document.getElementById('typingText');
+    let lineIdx = 0, charIdx = 0;
+
+    function typeLine() {
+      if (lineIdx >= bootLines.length) {
+        // 完成后切换为普通问候
+        setTimeout(() => {
+          terminalEl.parentElement.innerHTML = '<h1 class="greeting">来自 董家才子 的小问候 <span class="flower">✿</span></h1>';
+        }, 2000);
+        return;
+      }
+
+      const line = bootLines[lineIdx];
+      if (charIdx < line.length) {
+        terminalEl.textContent += line[charIdx];
         charIdx++;
-        setTimeout(typeChar, 80 + Math.random() * 60);
+        setTimeout(typeLine, 30 + Math.random() * 40);
+      } else {
+        terminalEl.textContent += '\n';
+        lineIdx++;
+        charIdx = 0;
+        setTimeout(typeLine, lineIdx === 6 ? 400 : 200);
       }
     }
-    typeChar();
 
-    // Particles
-    const particleEmojis = ['🐟','✈','🧱','⌨','🃏','🎯','🐱','✨','💫','⭐','🌟'];
-    const bg = document.getElementById('particleBg');
-    for (let i = 0; i < 15; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle';
-      p.textContent = particleEmojis[Math.floor(Math.random() * particleEmojis.length)];
-      p.style.left = Math.random() * 100 + '%';
-      p.style.animationDuration = (15 + Math.random() * 20) + 's';
-      p.style.animationDelay = -(Math.random() * 20) + 's';
-      p.style.fontSize = (18 + Math.random() * 20) + 'px';
-      bg.appendChild(p);
-    }
+    terminalEl.parentElement.classList.add('terminal-text');
+    typeLine();
 
     // Streak badge
     const stats = getStats();
@@ -124,25 +142,11 @@
     function toggleAchievementPanel() {
       const panel = document.getElementById('achievementPanel');
       panel.classList.toggle('show');
-      if (panel.classList.contains('show')) renderAchievements();
-    }
-
-    function renderAchievements() {
-      const stats = getStats();
-      const unlocked = stats.achievements || [];
-      const grid = document.getElementById('achievementGrid');
-      grid.innerHTML = '';
-      Object.entries(ACHIEVEMENTS).forEach(([id, a]) => {
-        const isUnlocked = unlocked.includes(id);
-        const item = document.createElement('div');
-        item.className = 'achievement-item' + (isUnlocked ? '' : ' locked');
-        item.innerHTML = `
-          <div class="achievement-item-icon">${isUnlocked ? a.icon : '🔒'}</div>
-          <div class="achievement-item-title">${isUnlocked ? a.title : '???'}</div>
-          <div class="achievement-item-desc">${a.desc}</div>
-        `;
-        grid.appendChild(item);
-      });
+      if (panel.classList.contains('show')) {
+        const grid = document.getElementById('achievementGrid');
+        grid.className = 'chip-grid';
+        MoyuOS.Achievements.renderPanel(grid);
+      }
     }
 
     // Random quote
