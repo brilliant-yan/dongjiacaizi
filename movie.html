@@ -13,24 +13,33 @@
   </header>
 
   <div class="movie-container">
-    <div class="movie-player">
-      <video id="videoPlayer" controls preload="metadata" poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450'%3E%3Crect fill='%230a0e1a' width='800' height='450'/%3E%3Ctext x='50%25' y='45%25' font-family='sans-serif' font-size='48' fill='%2300d4aa' text-anchor='middle'%3E🎬%3C/text%3E%3Ctext x='50%25' y='60%25' font-family='sans-serif' font-size='24' fill='%23666' text-anchor='middle'%3E选择一部影片开始摸鱼%3C/text%3E%3C/svg%3E">
-        <source src="" type="video/mp4">
+    <div class="movie-player" id="moviePlayer">
+      <video id="videoPlayer" controls preload="metadata">
         您的浏览器不支持视频播放
       </video>
+      <div class="movie-placeholder" id="moviePlaceholder">
+        <div class="movie-placeholder-icon">🎬</div>
+        <div class="movie-placeholder-text">点击下方按钮选择影片</div>
+        <div class="movie-placeholder-sub">或输入自定义视频链接</div>
+      </div>
     </div>
 
     <div class="movie-controls">
-      <button class="movie-btn active" onclick="playVideo('nature')">🌲 自然风景</button>
-      <button class="movie-btn" onclick="playVideo('space')">🌌 宇宙纪录片</button>
-      <button class="movie-btn" onclick="playVideo('ocean')">🐠 海洋世界</button>
-      <button class="movie-btn" onclick="playVideo('city')">🏙️ 城市延时</button>
-      <button class="movie-btn" onclick="playVideo('custom')">📁 自定义视频</button>
+      <button class="movie-btn active" onclick="playVideo('demo1', this)">🎬 演示短片</button>
+      <button class="movie-btn" onclick="playVideo('demo2', this)">🐰 动画短片</button>
+      <button class="movie-btn" onclick="playVideo('demo3', this)">📺 测试视频</button>
+      <button class="movie-btn" onclick="toggleCustomInput(this)">📁 自定义视频</button>
     </div>
 
     <div class="movie-custom hidden" id="customInput">
-      <input type="url" id="videoUrl" placeholder="输入视频URL (mp4格式)" class="movie-input">
+      <input type="url" id="videoUrl" placeholder="输入视频URL (mp4格式)" class="movie-input"
+             onkeydown="if(event.key==='Enter')loadCustomVideo()">
       <button class="movie-btn-small" onclick="loadCustomVideo()">加载视频</button>
+    </div>
+
+    <div class="movie-error hidden" id="movieError">
+      <div class="movie-error-icon">⚠️</div>
+      <div class="movie-error-text" id="errorText">视频加载失败，请尝试自定义视频链接</div>
     </div>
 
     <div class="movie-info">
@@ -46,7 +55,8 @@
 
     <div class="movie-tips">
       <p>💡 建议佩戴耳机，假装在开会</p>
-      <p>支持自定义视频URL，推荐存放于云盘</p>
+      <p>📁 支持自定义视频URL，推荐存放于云盘或图床</p>
+      <p>🎯 推荐来源：Pexels、Mixkit、Pixabay 等免费视频站</p>
     </div>
   </div>
 
@@ -55,57 +65,92 @@
   <script src="common.js"></script>
   <script>
     const videos = {
-      nature: {
-        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        name: '自然风景 - 大雄兔'
+      demo1: {
+        url: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
+        name: '演示短片 - 大雄兔'
       },
-      space: {
-        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-        name: '宇宙纪录片 - 大象之梦'
+      demo2: {
+        url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+        name: '动画短片 - 大雄兔'
       },
-      ocean: {
-        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        name: '海洋世界 - 更大火焰'
-      },
-      city: {
-        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-        name: '城市延时 - 更大逃亡'
+      demo3: {
+        url: 'https://www.w3schools.com/html/movie.mp4',
+        name: '测试视频'
       }
     };
 
     const videoPlayer = document.getElementById('videoPlayer');
+    const placeholder = document.getElementById('moviePlaceholder');
+    const errorPanel = document.getElementById('movieError');
     let watchStartTime = null;
     let watchTimer = null;
 
-    function playVideo(type) {
+    function hideError() {
+      errorPanel.classList.add('hidden');
+    }
+
+    function showError(msg) {
+      document.getElementById('errorText').textContent = msg;
+      errorPanel.classList.remove('hidden');
+    }
+
+    function setActiveBtn(btn) {
+      document.querySelectorAll('.movie-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function playVideo(type, btn) {
+      hideError();
+      setActiveBtn(btn);
+
       if (type === 'custom') {
-        document.getElementById('customInput').classList.toggle('hidden');
+        toggleCustomInput(btn);
         return;
       }
 
       const video = videos[type];
+      if (!video) return;
+
+      placeholder.classList.add('hidden');
       videoPlayer.src = video.url;
       videoPlayer.load();
-      videoPlayer.play();
+
+      videoPlayer.oncanplay = () => {
+        videoPlayer.play().catch(() => {});
+      };
+
+      videoPlayer.onerror = () => {
+        showError('视频加载失败，该视频源可能已失效。请尝试其他影片或使用自定义链接。');
+      };
 
       document.getElementById('currentVideo').textContent = video.name;
       startWatchTimer();
+    }
 
-      // 更新按钮状态
-      document.querySelectorAll('.movie-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+    function toggleCustomInput(btn) {
+      setActiveBtn(btn);
+      document.getElementById('customInput').classList.toggle('hidden');
     }
 
     function loadCustomVideo() {
-      const url = document.getElementById('videoUrl').value;
+      const url = document.getElementById('videoUrl').value.trim();
       if (!url) {
-        alert('请输入视频URL');
+        showError('请输入视频URL');
         return;
       }
 
+      hideError();
+      placeholder.classList.add('hidden');
       videoPlayer.src = url;
       videoPlayer.load();
-      videoPlayer.play();
+
+      videoPlayer.oncanplay = () => {
+        videoPlayer.play().catch(() => {});
+      };
+
+      videoPlayer.onerror = () => {
+        showError('视频加载失败，请检查URL是否正确且为mp4格式。');
+      };
 
       document.getElementById('currentVideo').textContent = '自定义视频';
       startWatchTimer();
