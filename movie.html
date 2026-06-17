@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>摸鱼影院 🎬</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-body movie-body">
+  <header class="page-header">
+    <div class="page-title"><span class="page-title-icon">🎬</span>摸鱼影院</div>
+    <a href="./" class="back-link">← 回首页</a>
+  </header>
+
+  <div class="movie-container">
+    <div class="movie-player">
+      <video id="videoPlayer" controls preload="metadata" poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450'%3E%3Crect fill='%230a0e1a' width='800' height='450'/%3E%3Ctext x='50%25' y='45%25' font-family='sans-serif' font-size='48' fill='%2300d4aa' text-anchor='middle'%3E🎬%3C/text%3E%3Ctext x='50%25' y='60%25' font-family='sans-serif' font-size='24' fill='%23666' text-anchor='middle'%3E选择一部影片开始摸鱼%3C/text%3E%3C/svg%3E">
+        <source src="" type="video/mp4">
+        您的浏览器不支持视频播放
+      </video>
+    </div>
+
+    <div class="movie-controls">
+      <button class="movie-btn active" onclick="playVideo('nature')">🌲 自然风景</button>
+      <button class="movie-btn" onclick="playVideo('space')">🌌 宇宙纪录片</button>
+      <button class="movie-btn" onclick="playVideo('ocean')">🐠 海洋世界</button>
+      <button class="movie-btn" onclick="playVideo('city')">🏙️ 城市延时</button>
+      <button class="movie-btn" onclick="playVideo('custom')">📁 自定义视频</button>
+    </div>
+
+    <div class="movie-custom hidden" id="customInput">
+      <input type="url" id="videoUrl" placeholder="输入视频URL (mp4格式)" class="movie-input">
+      <button class="movie-btn-small" onclick="loadCustomVideo()">加载视频</button>
+    </div>
+
+    <div class="movie-info">
+      <div class="movie-info-item">
+        <div class="movie-info-label">当前播放</div>
+        <div class="movie-info-value" id="currentVideo">未选择</div>
+      </div>
+      <div class="movie-info-item">
+        <div class="movie-info-label">摸鱼时长</div>
+        <div class="movie-info-value" id="watchTime">0分钟</div>
+      </div>
+    </div>
+
+    <div class="movie-tips">
+      <p>💡 建议佩戴耳机，假装在开会</p>
+      <p>支持自定义视频URL，推荐存放于云盘</p>
+    </div>
+  </div>
+
+  <footer class="page-footer">made with ♥ by 董家才子</footer>
+
+  <script src="common.js"></script>
+  <script>
+    const videos = {
+      nature: {
+        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        name: '自然风景 - 大雄兔'
+      },
+      space: {
+        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+        name: '宇宙纪录片 - 大象之梦'
+      },
+      ocean: {
+        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+        name: '海洋世界 - 更大火焰'
+      },
+      city: {
+        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+        name: '城市延时 - 更大逃亡'
+      }
+    };
+
+    const videoPlayer = document.getElementById('videoPlayer');
+    let watchStartTime = null;
+    let watchTimer = null;
+
+    function playVideo(type) {
+      if (type === 'custom') {
+        document.getElementById('customInput').classList.toggle('hidden');
+        return;
+      }
+
+      const video = videos[type];
+      videoPlayer.src = video.url;
+      videoPlayer.load();
+      videoPlayer.play();
+
+      document.getElementById('currentVideo').textContent = video.name;
+      startWatchTimer();
+
+      // 更新按钮状态
+      document.querySelectorAll('.movie-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    function loadCustomVideo() {
+      const url = document.getElementById('videoUrl').value;
+      if (!url) {
+        alert('请输入视频URL');
+        return;
+      }
+
+      videoPlayer.src = url;
+      videoPlayer.load();
+      videoPlayer.play();
+
+      document.getElementById('currentVideo').textContent = '自定义视频';
+      startWatchTimer();
+    }
+
+    function startWatchTimer() {
+      if (watchTimer) clearInterval(watchTimer);
+      watchStartTime = Date.now();
+
+      watchTimer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - watchStartTime) / 1000 / 60);
+        document.getElementById('watchTime').textContent = elapsed + '分钟';
+      }, 1000);
+    }
+
+    trackGamePlayed('movie');
+  </script>
+</body>
+</html>

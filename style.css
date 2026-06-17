@@ -152,6 +152,7 @@ body {
 .card-pet { border-top: 3px solid #51cf66; }
 .card-gallery { border-top: 3px solid #ffd43b; }
 .card-food { border-top: 3px solid #ff9800; }
+.card-movie { border-top: 3px solid #ff5722; }
 .card-code { border-top: 3px solid #00d4aa; }
 .card-fortune { border-top: 3px solid #9c27b0; }
 
@@ -1915,5 +1916,196 @@ body {
   .fortune-lucky {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+}
+
+/* ================================================================
+   Movie (摸鱼影院)
+   ================================================================ */
+.movie-body {
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+}
+
+.movie-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 20px;
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.movie-player {
+  width: 100%;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 87, 34, 0.3);
+}
+
+.movie-player video {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.movie-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+}
+
+.movie-btn {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 87, 34, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.movie-btn:hover {
+  background: rgba(255, 87, 34, 0.2);
+  border-color: #ff5722;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.movie-btn.active {
+  background: linear-gradient(135deg, #ff5722 0%, #ff9800 100%);
+  border-color: #ff5722;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255, 87, 34, 0.4);
+}
+
+.movie-btn-small {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #ff5722 0%, #ff9800 100%);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.movie-btn-small:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(255, 87, 34, 0.4);
+}
+
+.movie-custom {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+}
+
+.movie-custom.hidden {
+  display: none;
+}
+
+.movie-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 87, 34, 0.3);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.movie-input:focus {
+  border-color: #ff5722;
+}
+
+.movie-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.movie-info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.movie-info-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 87, 34, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.movie-info-label {
+  font-size: 12px;
+  color: rgba(255, 87, 34, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.movie-info-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff5722;
+}
+
+.movie-tips {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.movie-body .page-header {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 87, 34, 0.2);
+}
+
+.movie-body .page-title {
+  color: #ff5722;
+}
+
+.movie-body .back-link {
+  color: rgba(255, 87, 34, 0.6);
+}
+
+.movie-body .page-footer {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 600px) {
+  .movie-controls {
+    flex-direction: column;
+  }
+
+  .movie-btn {
+    width: 100%;
+  }
+
+  .movie-custom {
+    flex-direction: column;
+  }
+
+  .movie-info {
+    grid-template-columns: 1fr;
   }
 }
