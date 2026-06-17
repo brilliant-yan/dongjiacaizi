@@ -42,6 +42,7 @@
 
   <footer class="page-footer">made with ♥ by 董家才子</footer>
 
+  <script src="common.js"></script>
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -145,6 +146,7 @@
               enemies.splice(i, 1);
               score++;
               updateHUD();
+              if (score >= 50) unlockAchievement('shooter_50');
             }
             break;
           }
@@ -162,6 +164,7 @@
           enemies.splice(i, 1);
           lives--;
           createParticles(player.x, player.y, '#ff6b6b');
+          screenShake();
           updateHUD();
           if (lives <= 0) {
             gameRunning = false;
@@ -236,6 +239,8 @@
     }, { passive: false });
 
     function startGame() {
+      incrementGameCount();
+      trackGamePlayed('game');
       startOverlay.classList.add('hidden');
       endOverlay.classList.add('hidden');
       init();

@@ -138,6 +138,7 @@
 
   <footer class="page-footer">made with ♥ by 董家才子</footer>
 
+  <script src="common.js"></script>
   <script>
     let grid = [], score = 0, bestScore = parseInt(localStorage.getItem('g2048_best') || '0');
     let prevState = null, won = false, keepPlaying = false;
@@ -146,6 +147,8 @@
     document.getElementById('best').textContent = bestScore;
 
     function newGame() {
+      incrementGameCount();
+      trackGamePlayed('2048');
       grid = Array.from({length: 4}, () => Array(4).fill(0));
       score = 0; won = false; keepPlaying = false; prevState = null;
       document.getElementById('overlay').classList.add('hidden');
@@ -208,7 +211,8 @@
           const merged = arr[i] * 2;
           result.push(merged);
           gained += merged;
-          if (merged === 2048) won = true;
+          if (merged === 2048) { won = true; unlockAchievement('g2048_win'); }
+          if (merged >= 4096) unlockAchievement('g2048_4096');
           i++;
         } else {
           result.push(arr[i]);

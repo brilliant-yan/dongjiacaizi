@@ -110,6 +110,7 @@
 
   <footer class="page-footer">made with ♥ by 董家才子</footer>
 
+  <script src="common.js"></script>
   <script>
     const ALL_EMOJIS = ['🐱','🐶','🐼','🦊','🐸','🐵','🦁','🐷','🐙','🦋','🐢','🐬'];
     let currentPairs = 4;
@@ -127,6 +128,8 @@
     }
 
     function startGame(pairs) {
+      incrementGameCount();
+      trackGamePlayed('memory');
       currentPairs = pairs;
       document.querySelectorAll('.diff-btn').forEach((b, i) => {
         b.classList.toggle('active', [4,6,8][i] === pairs);
@@ -205,6 +208,7 @@
     }
 
     function showWin() {
+      if (currentPairs === 8) unlockAchievement('mem_hard');
       document.getElementById('winMoves').textContent = moves;
       document.getElementById('winTime').textContent = seconds;
       const minMoves = currentPairs;

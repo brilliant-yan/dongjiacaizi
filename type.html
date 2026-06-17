@@ -116,6 +116,7 @@
 
   <footer class="page-footer">made with ♥ by 董家才子</footer>
 
+  <script src="common.js"></script>
   <script>
     const WORDS = {
       easy: ['cat','dog','run','sun','tea','cup','hat','pen','box','red','big','hot','map','key','fan','jam','log','net','owl','pie'],
@@ -162,6 +163,8 @@
     }
 
     function startGame() {
+      incrementGameCount();
+      trackGamePlayed('type');
       document.getElementById('startOverlay').classList.add('hidden');
       document.getElementById('endOverlay').classList.add('hidden');
       falling.forEach(w => w.el.remove());
@@ -203,6 +206,7 @@
           falling.splice(i, 1);
           lives--;
           activeWord = null;
+          screenShake();
           updateHUD();
           if (lives <= 0) { endGame(); return; }
         }
@@ -301,6 +305,9 @@
       clearTimeout(spawnTimer);
       cancelAnimationFrame(frameTimer);
       input.disabled = true;
+
+      if (score >= 100) unlockAchievement('type_100');
+      if (score >= 200) unlockAchievement('type_200');
 
       document.getElementById('finalScore').textContent = score;
       let comment;

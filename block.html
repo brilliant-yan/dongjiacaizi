@@ -100,6 +100,7 @@
 
   <footer class="page-footer">made with ♥ by 董家才子</footer>
 
+  <script src="common.js"></script>
   <script>
     const canvas = document.getElementById('blkCanvas');
     const ctx = canvas.getContext('2d');
@@ -184,6 +185,7 @@
 
       if (ball.y + ball.r > H) {
         lives--;
+        screenShake(10, 400);
         updateHUD();
         if (lives <= 0) {
           running = false;
@@ -313,6 +315,8 @@
     }
 
     function beginGame() {
+      incrementGameCount();
+      trackGamePlayed('block');
       level = 0; score = 0; lives = 3;
       updateHUD();
       showLevelScreen();
@@ -349,6 +353,8 @@
 
     function showWin() {
       cancelAnimationFrame(animId);
+      unlockAchievement('block_clear');
+      if (lives === 3) unlockAchievement('block_perfect');
       document.getElementById('winScore').textContent = score;
       showOverlay('winOverlay');
     }

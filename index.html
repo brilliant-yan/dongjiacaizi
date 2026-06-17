@@ -7,8 +7,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="home-body">
+  <div class="particle-bg" id="particleBg"></div>
+
   <div class="home-container">
-    <h1 class="greeting">来自 董家才子 的小问候 <span class="flower">✿</span></h1>
+    <h1 class="greeting">
+      <span id="typingText"></span><span class="typing-cursor"></span>
+    </h1>
 
     <div class="countdown-box">
       <p class="countdown-label" id="countdownLabel">距下班</p>
@@ -62,12 +66,86 @@
       </a>
     </nav>
 
+    <div class="streak-badge" id="streakBadge"></div>
+
     <footer class="home-footer">
       <p>made with <span class="heart">♥</span> by 董家才子</p>
+      <p class="footer-hint">💡 试试按 ESC 键，或者输入上上下下左右左右BA</p>
     </footer>
   </div>
 
+  <button class="achievement-panel-btn" onclick="toggleAchievementPanel()" title="查看成就">🏆</button>
+
+  <div class="achievement-panel" id="achievementPanel">
+    <button class="achievement-panel-close" onclick="toggleAchievementPanel()">✕</button>
+    <div class="achievement-panel-content">
+      <div class="achievement-panel-title">🏆 成就墙</div>
+      <div class="achievement-grid" id="achievementGrid"></div>
+    </div>
+  </div>
+
+  <script src="common.js"></script>
   <script>
+    // Typing effect
+    const fullText = '来自 董家才子 的小问候 ✿';
+    const typingEl = document.getElementById('typingText');
+    let charIdx = 0;
+    function typeChar() {
+      if (charIdx < fullText.length) {
+        typingEl.textContent += fullText[charIdx];
+        charIdx++;
+        setTimeout(typeChar, 80 + Math.random() * 60);
+      }
+    }
+    typeChar();
+
+    // Particles
+    const particleEmojis = ['🐟','✈','🧱','⌨','🃏','🎯','🐱','✨','💫','⭐','🌟'];
+    const bg = document.getElementById('particleBg');
+    for (let i = 0; i < 15; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.textContent = particleEmojis[Math.floor(Math.random() * particleEmojis.length)];
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (15 + Math.random() * 20) + 's';
+      p.style.animationDelay = -(Math.random() * 20) + 's';
+      p.style.fontSize = (18 + Math.random() * 20) + 'px';
+      bg.appendChild(p);
+    }
+
+    // Streak badge
+    const stats = getStats();
+    if (stats.streak && stats.streak > 1) {
+      document.getElementById('streakBadge').innerHTML =
+        `🔥 连续摸鱼 <strong>${stats.streak}</strong> 天`;
+    }
+
+    // Achievement panel
+    function toggleAchievementPanel() {
+      const panel = document.getElementById('achievementPanel');
+      panel.classList.toggle('show');
+      if (panel.classList.contains('show')) renderAchievements();
+    }
+
+    function renderAchievements() {
+      const stats = getStats();
+      const unlocked = stats.achievements || [];
+      const grid = document.getElementById('achievementGrid');
+      grid.innerHTML = '';
+      Object.entries(ACHIEVEMENTS).forEach(([id, a]) => {
+        const isUnlocked = unlocked.includes(id);
+        const item = document.createElement('div');
+        item.className = 'achievement-item' + (isUnlocked ? '' : ' locked');
+        item.innerHTML = `
+          <div class="achievement-item-icon">${isUnlocked ? a.icon : '🔒'}</div>
+          <div class="achievement-item-title">${isUnlocked ? a.title : '???'}</div>
+          <div class="achievement-item-desc">${a.desc}</div>
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    // Random quote
     const quotes = [
       "今天的你，也在努力假装很忙呢 ✨",
       "摸鱼不是偷懒，是灵魂的喘息 🐟",
@@ -78,11 +156,17 @@
       "打工是不可能打工的...啊不对，正在打工 🫠",
       "你的代码能跑，但你的灵魂在报错 👻",
       "生活不止眼前的bug，还有远方的摸鱼 🌈",
+      "摸鱼一时爽，一直摸鱼一直爽 🐟",
+      "你今天的工作量，取决于老板的视力 👓",
+      "不是在开会，就是在去开会的路上 🚶",
+      "代码千万行，摸鱼第一行 💻",
+      "人生苦短，我选摸鱼 🎣",
+      "别卷了，来玩个游戏吧 🎮",
     ];
-
     document.getElementById('funQuote').textContent =
       '「' + quotes[Math.floor(Math.random() * quotes.length)] + '」';
 
+    // Countdown
     function updateCountdown() {
       const now = new Date();
       const day = now.getDay();
@@ -120,6 +204,9 @@
 
     updateCountdown();
     setInterval(updateCountdown, 1000);
+
+    trackGamePlayed('index');
   </script>
 </body>
 </html>
+

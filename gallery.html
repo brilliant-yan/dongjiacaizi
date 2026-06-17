@@ -25,6 +25,7 @@
 
   <footer class="page-footer">made with ♥ by 董家才子</footer>
 
+  <script src="common.js"></script>
   <script>
     const memes = [
       { emoji: '🫠', label: '我裂开了' },
@@ -84,6 +85,8 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') lightbox.classList.remove('show');
     });
+
+    trackGamePlayed('gallery');
   </script>
 </body>
 </html>

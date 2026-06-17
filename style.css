@@ -156,6 +156,22 @@ body {
   color: #aaa;
 }
 
+.footer-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #ccc;
+}
+
+.streak-badge {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #e65100;
+}
+
+.streak-badge strong {
+  font-size: 18px;
+}
+
 .heart {
   color: #e91e63;
   animation: beat 1.2s ease-in-out infinite;
@@ -630,3 +646,353 @@ body {
   background: none;
   border: none;
 }
+
+/* === Achievement Toast === */
+.achievement-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  transform: translateX(120%);
+  transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 9999;
+  max-width: 320px;
+}
+
+.achievement-toast.show {
+  transform: translateX(0);
+}
+
+.achievement-icon {
+  font-size: 32px;
+}
+
+.achievement-label {
+  font-size: 11px;
+  opacity: 0.8;
+  margin-bottom: 2px;
+}
+
+.achievement-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* === Boss Screen (Fake Excel) === */
+.boss-screen {
+  position: fixed;
+  inset: 0;
+  background: #217346;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Segoe UI', -apple-system, sans-serif;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+}
+
+.boss-screen.show {
+  transform: translateY(0);
+}
+
+.boss-screen.slide-out {
+  transform: translateY(-100%);
+}
+
+.boss-titlebar {
+  background: #217346;
+  color: #fff;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.boss-logo {
+  font-size: 16px;
+}
+
+.boss-filename {
+  flex: 1;
+}
+
+.boss-window-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.boss-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.boss-btn:last-child:hover {
+  background: #e81123;
+}
+
+.boss-toolbar {
+  background: #f3f2f1;
+  padding: 4px 12px;
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  color: #444;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.boss-toolbar span {
+  cursor: pointer;
+}
+
+.boss-toolbar span:hover {
+  color: #217346;
+}
+
+.boss-formula-bar {
+  background: #fff;
+  padding: 4px 12px;
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid #d0d0d0;
+  font-size: 13px;
+}
+
+.boss-cell-ref {
+  background: #f3f2f1;
+  padding: 2px 8px;
+  border: 1px solid #d0d0d0;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.boss-formula {
+  color: #666;
+  font-family: 'Consolas', monospace;
+}
+
+.boss-sheet {
+  flex: 1;
+  overflow: auto;
+  background: #fff;
+}
+
+.boss-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.boss-table td {
+  border: 1px solid #d4d4d4;
+  padding: 4px 8px;
+  min-width: 80px;
+}
+
+.boss-row-num {
+  background: #f3f2f1 !important;
+  color: #888;
+  text-align: center;
+  width: 32px !important;
+  min-width: 32px !important;
+}
+
+.boss-header-cell {
+  background: #217346 !important;
+  color: #fff;
+  font-weight: 600;
+}
+
+.boss-statusbar {
+  background: #217346;
+  color: #fff;
+  padding: 4px 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+/* === Confetti Canvas === */
+.confetti-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99998;
+}
+
+/* === Particles === */
+.particle-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  font-size: 24px;
+  opacity: 0.15;
+  animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.15;
+  }
+  90% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translateY(-100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.home-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* === Typing Effect === */
+.typing-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: #2563eb;
+  margin-left: 4px;
+  animation: blink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* === Achievement Panel === */
+.achievement-panel-btn {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  z-index: 100;
+  transition: transform 0.2s;
+}
+
+.achievement-panel-btn:hover {
+  transform: scale(1.1);
+}
+
+.achievement-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.achievement-panel.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.achievement-panel-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.achievement-panel-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #2c3e50;
+}
+
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.achievement-item {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.achievement-item:hover {
+  transform: translateY(-2px);
+}
+
+.achievement-item.locked {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.achievement-item-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.achievement-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.achievement-item-desc {
+  font-size: 11px;
+  color: #888;
+}
+
+.achievement-panel-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  font-size: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+}
+
