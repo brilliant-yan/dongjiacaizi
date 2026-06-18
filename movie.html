@@ -25,9 +25,10 @@
     </div>
 
     <div class="movie-controls">
-      <button class="movie-btn active" onclick="playVideo('xiyy', this)">🐑 喜羊羊与灰太狼</button>
-      <button class="movie-btn" onclick="playVideo('scxfg', this)">👨‍🍳 神厨小福贵</button>
-      <button class="movie-btn" onclick="playVideo('hmlt', this)">🐱 虹猫蓝兔七侠传</button>
+      <button class="movie-btn active" onclick="playVideo('steamboat', this)">🐭 蒸汽船威利(1928经典)</button>
+      <button class="movie-btn" onclick="playVideo('bunny', this)">🐰 大雄兔</button>
+      <button class="movie-btn" onclick="playVideo('sintel', this)">🗡️ 辛特尔</button>
+      <button class="movie-btn" onclick="playVideo('eldream', this)">🐘 大象之梦</button>
       <button class="movie-btn" onclick="toggleCustomInput(this)">📁 自定义视频</button>
     </div>
 
@@ -55,8 +56,8 @@
 
     <div class="movie-tips">
       <p>💡 建议佩戴耳机，假装在开会</p>
-      <p>📁 想看正片？用"自定义视频"粘贴 B站/网盘 等 mp4 链接</p>
-      <p>🎯 内置视频仅为演示片段，完整剧集请自行添加</p>
+      <p>🎬 内置均为完整正片：经典动画 + 开源电影（合法免费，可放心观看）</p>
+      <p>📁 想看《阿甘正传》《西游记》等版权片？用"自定义视频"粘贴网盘/B站等 mp4 直链</p>
     </div>
   </div>
 
@@ -65,17 +66,21 @@
   <script src="common.js"></script>
   <script>
     const videos = {
-      xiyy: {
-        url: 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
-        name: '喜羊羊与灰太狼'
+      steamboat: {
+        url: 'https://archive.org/download/SteamboatWillie/Steamboat%20Willie.mp4',
+        name: '蒸汽船威利 (1928 经典动画)'
       },
-      scxfg: {
-        url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-        name: '神厨小福贵'
+      bunny: {
+        url: 'https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4',
+        name: '大雄兔 Big Buck Bunny'
       },
-      hmlt: {
-        url: 'https://www.w3schools.com/html/movie.mp4',
-        name: '虹猫蓝兔七侠传'
+      sintel: {
+        url: 'https://archive.org/download/Sintel/sintel-2048-stereo_512kb.mp4',
+        name: '辛特尔 Sintel'
+      },
+      eldream: {
+        url: 'https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4',
+        name: '大象之梦 Elephants Dream'
       }
     };
 
