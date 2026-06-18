@@ -566,7 +566,8 @@
       ScreenShake.trigger(12, 400);
     }
     // Alt+E — Excel 伪装表格（用 e.code 判断物理按键：macOS 上 Option+E 是重音死键，e.key 会变成 'Dead'）
-    if (e.altKey && e.code === 'KeyE') {
+    // !e.ctrlKey：排除欧洲键盘 AltGr(=Ctrl+Alt) 误触发，如 AltGr+E 在部分布局是 €
+    if (e.altKey && !e.ctrlKey && e.code === 'KeyE') {
       e.preventDefault();
       ExcelBoss.toggle();
     }

@@ -1320,7 +1320,7 @@ body {
   flex-direction: column;
   gap: 12px;
   min-height: 200px;
-  max-height: 320px;
+  max-height: 240px;
 }
 
 .ai-msg {
@@ -1365,6 +1365,107 @@ body {
 
 .ai-panel-btn:hover {
   background: linear-gradient(135deg, rgba(0, 212, 170, 0.3), rgba(0, 255, 136, 0.3));
+  box-shadow: 0 0 12px rgba(0, 212, 170, 0.3);
+}
+
+/* === AI 助手：可对话 UI（用户气泡 / 快捷气泡 / 输入框 / 打字动效）=== */
+.ai-msg-user {
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.22), rgba(0, 255, 136, 0.18));
+  color: #eafff7;
+  align-self: flex-end;
+  border: 1px solid rgba(0, 212, 170, 0.35);
+}
+
+.ai-msg-typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  background: rgba(102, 126, 234, 0.15);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.ai-typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00d4aa;
+  animation: aiTyping 1s infinite ease-in-out;
+}
+
+.ai-typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.ai-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes aiTyping {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+.ai-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 16px 10px;
+}
+
+.ai-chip {
+  padding: 5px 10px;
+  background: rgba(102, 126, 234, 0.12);
+  border: 1px solid rgba(0, 212, 170, 0.25);
+  border-radius: 14px;
+  color: #9fefd8;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.ai-chip:hover {
+  background: rgba(0, 212, 170, 0.2);
+  border-color: rgba(0, 212, 170, 0.5);
+  color: #d6fff2;
+}
+
+.ai-panel-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.ai-panel-input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0, 212, 170, 0.3);
+  border-radius: 8px;
+  color: #eee;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ai-panel-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+
+.ai-panel-input:focus {
+  border-color: #00d4aa;
+  box-shadow: 0 0 8px rgba(0, 212, 170, 0.25);
+}
+
+.ai-panel-send {
+  padding: 9px 14px;
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.25), rgba(0, 255, 136, 0.25));
+  border: 1px solid rgba(0, 212, 170, 0.4);
+  border-radius: 8px;
+  color: #00d4aa;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.ai-panel-send:hover {
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.35), rgba(0, 255, 136, 0.35));
   box-shadow: 0 0 12px rgba(0, 212, 170, 0.3);
 }
 

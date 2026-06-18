@@ -93,6 +93,50 @@
     return interpolateQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
   }
 
+  // ===== 离线智能回复引擎（关键词路由 + 时间/上下文感知）=====
+  function nowHM() {
+    const n = new Date();
+    return ('0' + n.getHours()).slice(-2) + ':' + ('0' + n.getMinutes()).slice(-2);
+  }
+
+  function timeLeftStr() {
+    const n = new Date();
+    const h = n.getHours(), m = n.getMinutes(), day = n.getDay();
+    if (day === 0 || day === 6) return '今天是周末，你居然在上班？建议立刻合上电脑跑路 🏃';
+    if (h >= 18) return '早过 18:00 了，你怎么还没走？我先帮你打了下班卡 👋';
+    if (h < 9) return '还没到上班时间呢，建议回笼觉 +1 😴';
+    const left = 18 * 60 - (h * 60 + m);
+    return `距离 18:00 下班还有 ${Math.floor(left / 60)} 小时 ${left % 60} 分钟，再忍忍 ☕`;
+  }
+
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // 顺序敏感：更具体的意图排在前面，最后兜底随机语录
+  const INTENTS = [
+    { keys: ['下班', '下课', '走人', '跑路'], reply: timeLeftStr },
+    { keys: ['几点', '现在时间', '时间', '现在几'], reply: () => `现在是 ${nowHM()}，正是摸鱼的黄金时段 ⏰` },
+    { keys: ['老板', '领导', 'boss', '上司', '经理', '来了', '被发现', '抓'], reply: () => '别慌！双击 Esc 一键黑屏伪装，或按 Alt+E 瞬间切出 Excel 财务月结表。深呼吸，你只是在「认真核对月度数据」📊' },
+    { keys: ['吃', '午饭', '晚饭', '午餐', '外卖', '饿', '干饭'], reply: () => '纠结吃啥？去首页的「美食轮盘 🍜」转一把，把选择困难症交给命运。' },
+    { keys: ['玩', '游戏', '无聊', '没事', '推荐', '打发'], reply: () => `试试「${pick(['2048 🔢', '打砖块 🧱', '贪吃蛇 🐍', '打字大作战 ⌨️', '记忆翻牌 🃏', '摸鱼影院 🎬'])}」，首页就能玩，包你忘记时间（和工作）。` },
+    { keys: ['累', '困', '烦', '压力', '想睡', '摸鱼', '划水'], reply: () => '建议执行「战略性厕所时间」重置老板注意力检测器，顺便刷会儿手机 🚽📱' },
+    { keys: ['工资', '加薪', '涨薪', '薪水', '奖金', '钱'], reply: () => 'AI 已生成《今日摸鱼绩效报告》：表现优异，强烈建议加薪 💰（该报告对老板不可见）' },
+    { keys: ['运势', '占卜', '吉凶', '星座', '算命', '今天怎么样'], reply: () => '去首页「今日运势 🔮」抽一签，AI 算命，仅供（摸鱼）参考。' },
+    { keys: ['你是谁', '你能', '能做什么', '会什么', '帮助', 'help', '功能', '干嘛', '你可以'], reply: () => 'AI 摸鱼助手为您服务 🤖 我能：算还有多久下班、教你躲老板、决定中午吃啥、推荐摸鱼小游戏、帮你算今日运势。点下面的快捷提问试试 👇' },
+    { keys: ['谢谢', '感谢', 'thanks', 'thx', '多谢', '辛苦'], reply: () => '不客气～摸鱼路上有我相伴 🐟 记得下班带上我。' },
+    { keys: ['天气', '下雨', '热不热', '冷不冷', '几度'], reply: () => '我是离线摸鱼助手，看不了天气；但无论晴雨，摸鱼的心情永远晴朗 ☀️' },
+    { keys: ['爱你', '喜欢你', '聪明', '厉害', '可爱'], reply: () => '过奖啦，我只是个把摸鱼当事业的 AI 🤖✨' },
+    { keys: ['再来', '换一个', '还有', '下一个', '继续', '再说'], reply: () => getRandomQuote() },
+    { keys: ['你好', '您好', 'hi', 'hello', '哈喽', '在吗', '在不在', '嗨'], reply: () => '在的在的，摸鱼助手 24 小时待命（除了真有活干的时候）。想聊点啥？' },
+  ];
+
+  function smartReply(text) {
+    const t = String(text).toLowerCase();
+    for (const it of INTENTS) {
+      if (it.keys.some(k => t.includes(k.toLowerCase()))) return it.reply();
+    }
+    return getRandomQuote();
+  }
+
   // ===== 拖拽逻辑 =====
   function makeDraggable(el, handle) {
     let isDragging = false;
@@ -179,10 +223,22 @@
           <button class="ai-panel-close">✕</button>
         </div>
         <div class="ai-panel-body" id="aiPanelBody">
-          <div class="ai-msg ai-msg-system">[系统] AI 摸鱼助手已就绪，随时为您服务。</div>
+          <div class="ai-msg ai-msg-system">[系统] AI 摸鱼助手已就绪。直接打字提问，或点下面的快捷按钮 👇</div>
+        </div>
+        <div class="ai-chips" id="aiChips">
+          <button class="ai-chip" type="button">还有多久下班？</button>
+          <button class="ai-chip" type="button">老板来了怎么办？</button>
+          <button class="ai-chip" type="button">中午吃什么？</button>
+          <button class="ai-chip" type="button">推荐个摸鱼游戏</button>
+          <button class="ai-chip" type="button">你能干嘛？</button>
+          <button class="ai-chip" type="button">🎲 随便说点啥</button>
         </div>
         <div class="ai-panel-footer">
-          <button class="ai-panel-btn" id="aiAskBtn">🎲 问 AI 一个问题</button>
+          <div class="ai-panel-input-row">
+            <input class="ai-panel-input" id="aiInput" type="text" maxlength="100"
+                   placeholder="问问 AI 摸鱼助手…" autocomplete="off">
+            <button class="ai-panel-send" id="aiSendBtn" type="button">发送</button>
+          </div>
         </div>
       `;
       document.body.appendChild(this.panel);
@@ -191,11 +247,18 @@
         this._togglePanel(false);
       });
 
-      document.getElementById('aiAskBtn').addEventListener('click', () => {
-        this._addMessage(getRandomQuote());
+      const input = this.panel.querySelector('#aiInput');
+      const sendBtn = this.panel.querySelector('#aiSendBtn');
+      sendBtn.addEventListener('click', () => this._send(input.value));
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); this._send(input.value); }
       });
 
-      // 追踪点击次数
+      this.panel.querySelectorAll('.ai-chip').forEach(chip => {
+        chip.addEventListener('click', () => this._send(chip.textContent));
+      });
+
+      // 追踪点击次数 → 解锁「图灵测试员」成就
       this.panel.addEventListener('click', () => {
         this.clickCount++;
         global.MoyuOS.Storage.update(data => {
@@ -237,6 +300,44 @@
           clearInterval(this.typingTimer);
         }
       }, 40);
+    },
+
+    _addUserMessage(text) {
+      const body = document.getElementById('aiPanelBody');
+      const msg = document.createElement('div');
+      msg.className = 'ai-msg ai-msg-user';
+      msg.textContent = text; // textContent 渲染，防止 XSS
+      body.appendChild(msg);
+      body.scrollTop = body.scrollHeight;
+    },
+
+    _showTyping() {
+      const body = document.getElementById('aiPanelBody');
+      const el = document.createElement('div');
+      el.className = 'ai-msg ai-msg-typing';
+      el.innerHTML = '<span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>';
+      body.appendChild(el);
+      body.scrollTop = body.scrollHeight;
+      return el;
+    },
+
+    _send(raw) {
+      const text = String(raw == null ? '' : raw).trim();
+      if (!text || this._pending) return;
+      this._pending = true;
+
+      this._addUserMessage(text);
+      const inputEl = document.getElementById('aiInput');
+      if (inputEl) inputEl.value = '';
+      getAudioCtx(); // 用户交互时初始化音频
+
+      const typing = this._showTyping();
+      const reply = smartReply(text);
+      setTimeout(() => {
+        if (typing) typing.remove();
+        this._addMessage(reply);
+        this._pending = false;
+      }, 500 + Math.random() * 600);
     },
 
     _startAutoPopup() {
